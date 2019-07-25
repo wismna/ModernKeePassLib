@@ -1,0 +1,74 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>2.41.0</Version>
+    <Authors>Geoffroy Bonneville</Authors>
+    <PackageLicenseUrl>https://www.gnu.org/licenses/gpl-3.0.en.html</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/wismna/ModernKeePass</PackageProjectUrl>
+    <Description>Portable KeePass Password Management Library that targets .Net Standard and WinRT. Allows reading, editing and writing to KeePass 2.x databases.</Description>
+    <Company>wismna</Company>
+    <Product>ModernKeePassLib</Product>
+    <PackageReleaseNotes>Updated to version 2.41</PackageReleaseNotes>
+    <PackageTags>KeePass KeePassLib Portable PCL NetStandard ModernKeePass</PackageTags>
+    <Copyright>Copyright © 2019 Geoffroy Bonneville</Copyright>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;ModernKeePassLib</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;ModernKeePassLib</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Cryptography\Hash\HashAlgorithm.cs" />
+    <Compile Remove="Cryptography\Hash\HMAC.cs" />
+    <Compile Remove="Cryptography\Hash\HMACSHA1.cs" />
+    <Compile Remove="Cryptography\Hash\HMACSHA256.cs" />
+    <Compile Remove="Cryptography\Hash\SHA256Managed.cs" />
+    <Compile Remove="Cryptography\Hash\SHA512Managed.cs" />
+    <Compile Remove="Native\ClipboardU.cs" />
+    <Compile Remove="Native\NativeLib.cs" />
+    <Compile Remove="Native\NativeMethods.cs" />
+    <Compile Remove="Native\NativeMethods.Unix.cs" />
+    <Compile Remove="Translation\KPControlCustomization.cs" />
+    <Compile Remove="Translation\KPFormCustomization.cs" />
+    <Compile Remove="Translation\KPStringTable.cs" />
+    <Compile Remove="Translation\KPStringTableItem.cs" />
+    <Compile Remove="Translation\KPTranslation.cs" />
+    <Compile Remove="Translation\KPTranslationProperties.cs" />
+    <Compile Remove="Utility\GfxUtil.cs" />
+    <Compile Remove="Utility\MonoWorkarounds.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Native\ClipboardU.cs" />
+    <None Include="Native\NativeLib.cs" />
+    <None Include="Native\NativeMethods.cs" />
+    <None Include="Native\NativeMethods.Unix.cs" />
+    <None Include="Translation\KPControlCustomization.cs" />
+    <None Include="Translation\KPFormCustomization.cs" />
+    <None Include="Translation\KPStringTable.cs" />
+    <None Include="Translation\KPStringTableItem.cs" />
+    <None Include="Translation\KPTranslation.cs" />
+    <None Include="Translation\KPTranslationProperties.cs" />
+    <None Include="Utility\GfxUtil.cs" />
+    <None Include="Utility\MonoWorkarounds.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.3.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Windows">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.17134.0\Windows.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+    </Reference>
+  </ItemGroup>
+
+</Project>
