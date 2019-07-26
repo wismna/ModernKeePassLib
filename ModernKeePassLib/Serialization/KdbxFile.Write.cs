@@ -429,7 +429,7 @@ namespace ModernKeePassLib.Serialization
 			};
 
 			if(!pgRoot.TraverseTree(TraversalMethod.PreOrder, gh, eh))
-				throw new InvalidOperationException();
+				throw new OperationCanceledException();
 
 			while(groupStack.Count > 1)
 			{

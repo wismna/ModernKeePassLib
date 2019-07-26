@@ -61,7 +61,7 @@ namespace ModernKeePassLib
 	}
 
 	/// <summary>
-	/// Methods for merging password databases/entries.
+	/// Methods for merging databases/entries.
 	/// </summary>
 	public enum PwMergeMethod
 	{

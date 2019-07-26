@@ -67,14 +67,13 @@ namespace ModernKeePassLib.Keys
 		{
 			get { return m_pbKeyData; }
 		}
-
 #if ModernKeePassLib
-        public KcpKeyFile(StorageFile strKeyFile)
-	    {
-	        Construct(IOConnectionInfo.FromFile(strKeyFile), false);
-	    }
+        public KcpKeyFile(StorageFile keyFile)
+		{
+			Construct(IOConnectionInfo.FromStorageFile(keyFile), false);
+		}
 #else
-		public KcpKeyFile(string strKeyFile)
+        public KcpKeyFile(string strKeyFile)
 		{
 			Construct(IOConnectionInfo.FromPath(strKeyFile), false);
 		}
@@ -183,19 +182,19 @@ namespace ModernKeePassLib.Keys
 			return null;
 		}
 
-		/// <summary>
-		/// Create a new, random key-file.
-		/// </summary>
-		/// <param name="strFilePath">Path where the key-file should be saved to.
-		/// If the file exists already, it will be overwritten.</param>
-		/// <param name="pbAdditionalEntropy">Additional entropy used to generate
-		/// the random key. May be <c>null</c> (in this case only the KeePass-internal
-		/// random number generator is used).</param>
-		/// <returns>Returns a <c>FileSaveResult</c> error code.</returns>
+        /// <summary>
+        /// Create a new, random key-file.
+        /// </summary>
+        /// <param name="strFilePath">Path where the key-file should be saved to.
+        /// If the file exists already, it will be overwritten.</param>
+        /// <param name="pbAdditionalEntropy">Additional entropy used to generate
+        /// the random key. May be <c>null</c> (in this case only the KeePass-internal
+        /// random number generator is used).</param>
+        /// <returns>Returns a <c>FileSaveResult</c> error code.</returns>
 #if ModernKeePassLib
-        public static void Create(StorageFile strFilePath, byte[] pbAdditionalEntropy)
+        public static void Create(StorageFile file, byte[] pbAdditionalEntropy)
 #else
-		public static void Create(string strFilePath, byte[] pbAdditionalEntropy)
+        public static void Create(string strFilePath, byte[] pbAdditionalEntropy)
 #endif
 		{
 			byte[] pbKey32 = CryptoRandom.Instance.GetRandomBytes(32);
@@ -215,7 +214,11 @@ namespace ModernKeePassLib.Keys
 				}
 			}
 
-			CreateXmlKeyFile(strFilePath, pbFinalKey32);
+#if ModernKeePassLib
+            CreateXmlKeyFile(file, pbFinalKey32);
+#else
+            CreateXmlKeyFile(strFilePath, pbFinalKey32);
+#endif
 		}
 
 		// ================================================================
@@ -276,19 +279,23 @@ namespace ModernKeePassLib.Keys
 
 			return pbKeyData;
 		}
+
 #if ModernKeePassLib
-        private static void CreateXmlKeyFile(StorageFile strFile, byte[] pbKeyData)
+        private static void CreateXmlKeyFile(StorageFile file, byte[] pbKeyData)
+		{
+			Debug.Assert(file != null);
+			if (file == null) throw new ArgumentNullException(nameof(file));
 #else
-		private static void CreateXmlKeyFile(string strFile, byte[] pbKeyData)
-#endif
+        private static void CreateXmlKeyFile(string strFile, byte[] pbKeyData)
 		{
 			Debug.Assert(strFile != null);
 			if(strFile == null) throw new ArgumentNullException("strFile");
+#endif
 			Debug.Assert(pbKeyData != null);
 			if(pbKeyData == null) throw new ArgumentNullException("pbKeyData");
 
 #if ModernKeePassLib
-            IOConnectionInfo ioc = IOConnectionInfo.FromFile(strFile);
+			var ioc = IOConnectionInfo.FromStorageFile(file);
 #else
 			IOConnectionInfo ioc = IOConnectionInfo.FromPath(strFile);
 #endif

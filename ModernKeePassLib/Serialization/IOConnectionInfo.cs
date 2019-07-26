@@ -25,14 +25,12 @@ using System.IO;
 using System.Text;
 using System.Xml.Serialization;
 #if ModernKeePassLib
+using System.Threading.Tasks;
 using Windows.Storage;
-//using PCLStorage;
 #endif
 
 using ModernKeePassLib.Interfaces;
 using ModernKeePassLib.Utility;
-using System.Threading.Tasks;
-using Windows.Storage.AccessCache;
 
 namespace ModernKeePassLib.Serialization
 {
@@ -69,6 +67,8 @@ namespace ModernKeePassLib.Serialization
 	public sealed class IOConnectionInfo : IDeepCloneable<IOConnectionInfo>
 	{
 		// private IOFileFormatHint m_ioHint = IOFileFormatHint.None;
+
+        public StorageFile StorageFile { get; set; }
 
 		private string m_strUrl = string.Empty;
 		public string Path
@@ -316,29 +316,17 @@ namespace ModernKeePassLib.Serialization
 		}
 
 #if ModernKeePassLib
-        public static IOConnectionInfo FromFile(StorageFile file)
+        public static IOConnectionInfo FromStorageFile(StorageFile file)
 		{
 			IOConnectionInfo ioc = new IOConnectionInfo();
 
-		    ioc.StorageFile = file;
-			ioc.Path = file.Path;
-			ioc.CredSaveMode = IOCredSaveMode.NoSave;
-
-			return ioc;
-		}
-
-        public static IOConnectionInfo FromPath(string strPath)
-		{
-			IOConnectionInfo ioc = new IOConnectionInfo();
-
-			ioc.Path = strPath;
-            ioc.StorageFile = StorageApplicationPermissions.FutureAccessList.GetFileAsync(strPath).GetAwaiter().GetResult();
+            ioc.StorageFile = file;
 			ioc.CredSaveMode = IOCredSaveMode.NoSave;
 
 			return ioc;
 		}
 #else
-        public static IOConnectionInfo FromPath(string strPath)
+		public static IOConnectionInfo FromPath(string strPath)
 		{
 			IOConnectionInfo ioc = new IOConnectionInfo();
 
@@ -348,10 +336,6 @@ namespace ModernKeePassLib.Serialization
 			return ioc;
 		}
 #endif
-
-
-	    public StorageFile StorageFile { get; set; }
-
 		public bool CanProbablyAccess()
 		{
 #if ModernKeePassLib

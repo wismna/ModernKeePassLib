@@ -22,6 +22,12 @@ namespace ModernKeePassLib.Native
         {
             return Environment.OSVersion.Platform;
         }
+
+        internal static string DecodeArgsToPath(string strApp)
+        {
+            if (!string.IsNullOrEmpty(strApp)) return strApp;
+            return string.Empty;
+        }
     }
 
 	internal static class NativeMethods

@@ -21,9 +21,9 @@ using System;
 using System.Diagnostics;
 using System.Text;
 
+using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Security;
 using ModernKeePassLib.Utility;
-using ModernKeePassLib.Cryptography;
 
 namespace ModernKeePassLib.Keys
 {

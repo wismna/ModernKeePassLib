@@ -24,7 +24,6 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
-
 #if (!ModernKeePassLib && !KeePassLibSD && !KeePassUAP)
 using System.Net.Cache;
 using System.Net.Security;
@@ -600,7 +599,12 @@ namespace ModernKeePassLib.Serialization
 
 		private static Stream OpenReadLocal(IOConnectionInfo ioc)
 		{
+#if ModernKeePassLib
              return ioc.StorageFile.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult().AsStream();
+#else
+            return new FileStream(ioc.Path, FileMode.Open, FileAccess.Read,
+				FileShare.Read);
+#endif
 		}
 
 #if (!ModernKeePassLib && !KeePassLibSD && !KeePassRT)
@@ -654,7 +658,7 @@ namespace ModernKeePassLib.Serialization
 			RaiseIOAccessPreEvent(ioc, IOAccessType.Exists);
 
 #if ModernKeePassLib
-            return ioc.StorageFile.IsAvailable;
+            return ioc.StorageFile != null;
 #else
 			if(ioc.IsLocalFile()) return File.Exists(ioc.Path);
 
@@ -696,7 +700,7 @@ namespace ModernKeePassLib.Serialization
 
 #if ModernKeePassLib
             if (!ioc.IsLocalFile()) return;
-		    ioc.StorageFile?.DeleteAsync().GetAwaiter().GetResult();
+            ioc.StorageFile?.DeleteAsync().GetAwaiter().GetResult();
 #else
 			if(ioc.IsLocalFile()) { File.Delete(ioc.Path); return; }
 
@@ -718,7 +722,7 @@ namespace ModernKeePassLib.Serialization
 			}
 #endif
 #endif
-		}
+        }
 
 		/// <summary>
 		/// Rename/move a file. For local file system and WebDAV, the
@@ -735,7 +739,7 @@ namespace ModernKeePassLib.Serialization
 
 #if ModernKeePassLib
             if (!iocFrom.IsLocalFile()) return;
-		    iocFrom.StorageFile?.RenameAsync(iocTo.Path).GetAwaiter().GetResult();
+            iocFrom.StorageFile?.RenameAsync(iocTo.Path).GetAwaiter().GetResult();
 #else
 			if(iocFrom.IsLocalFile()) { File.Move(iocFrom.Path, iocTo.Path); return; }
 

@@ -55,26 +55,23 @@ namespace ModernKeePassLib.Serialization
 	/// </summary>
 	public sealed partial class KdbxFile
 	{
+        /// <summary>
+        /// Load a KDBX file.
+        /// </summary>
+        /// <param name="strFilePath">File to load.</param>
+        /// <param name="fmt">Format.</param>
+        /// <param name="slLogger">Status logger (optional).</param>
 #if ModernKeePassLib
         public void Load(StorageFile file, KdbxFormat fmt, IStatusLogger slLogger)
-	    {
-	        IOConnectionInfo ioc = IOConnectionInfo.FromFile(file);
-	        Load(IOConnection.OpenRead(ioc), fmt, slLogger);
-	    }
-
+		{
+			IOConnectionInfo ioc = IOConnectionInfo.FromStorageFile(file);
 #else
-		/// <summary>
-		/// Load a KDBX file.
-		/// </summary>
-		/// <param name="strFilePath">File to load.</param>
-		/// <param name="fmt">Format.</param>
-		/// <param name="slLogger">Status logger (optional).</param>
-		public void Load(string strFilePath, KdbxFormat fmt, IStatusLogger slLogger)
+        public void Load(string strFilePath, KdbxFormat fmt, IStatusLogger slLogger)
 		{
 			IOConnectionInfo ioc = IOConnectionInfo.FromPath(strFilePath);
+#endif
 			Load(IOConnection.OpenRead(ioc), fmt, slLogger);
 		}
-#endif
 
 		/// <summary>
 		/// Load a KDBX file from a stream.
@@ -202,19 +199,17 @@ namespace ModernKeePassLib.Serialization
 				}
 
 #if KeePassDebug_WriteXml
-				// FileStream fsOut = new FileStream("Raw.xml", FileMode.Create,
-				//	FileAccess.Write, FileShare.None);
-				// try
-				// {
-				//	while(true)
-				//	{
-				//		int b = sXml.ReadByte();
-				//		if(b == -1) break;
-				//		fsOut.WriteByte((byte)b);
-				//	}
-				// }
-				// catch(Exception) { }
-				// fsOut.Close();
+#warning XML output is enabled!
+				/* using(FileStream fsOut = new FileStream("Raw.xml", FileMode.Create,
+					FileAccess.Write, FileShare.None))
+				{
+					while(true)
+					{
+						int b = sXml.ReadByte();
+						if(b == -1) throw new EndOfStreamException();
+						fsOut.WriteByte((byte)b);
+					}
+				} */
 #endif
 
 				ReadXmlStreamed(sXml, sHashing);
@@ -413,7 +408,7 @@ namespace ModernKeePassLib.Serialization
 				default:
 					Debug.Assert(false);
 					if(m_slLogger != null)
-						m_slLogger.SetText(KLRes.UnknownHeaderId + @": " +
+						m_slLogger.SetText(KLRes.UnknownHeaderId + ": " +
 							kdbID.ToString() + "!", LogStatusType.Warning);
 					break;
 			}

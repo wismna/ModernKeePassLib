@@ -28,37 +28,39 @@ using System.Security.Cryptography;
 
 namespace ModernKeePassLib.Cryptography
 {
-    public sealed class CryptoStreamEx : CryptoStream
-    {
-        private ICryptoTransform m_t;
-        private SymmetricAlgorithm m_a;
+	public sealed class CryptoStreamEx : CryptoStream
+	{
+		private ICryptoTransform m_t;
+		private SymmetricAlgorithm m_a;
 
-        public CryptoStreamEx(Stream s, ICryptoTransform t, CryptoStreamMode m,
-            SymmetricAlgorithm a) : base(s, t, m)
-        {
-            m_t = t;
-            m_a = a;
-        }
+		public CryptoStreamEx(Stream s, ICryptoTransform t, CryptoStreamMode m,
+			SymmetricAlgorithm a) : base(s, t, m)
+		{
+			m_t = t;
+			m_a = a;
+		}
 
-        protected override void Dispose(bool disposing)
-        {
-            try { base.Dispose(disposing); }
-            // Unnecessary exception from CryptoStream with
-            // RijndaelManagedTransform when a stream hasn't been
-            // read completely (e.g. incorrect master key)
-            catch (CryptographicException) { }
-            catch (Exception) { Debug.Assert(false); }
+		protected override void Dispose(bool disposing)
+		{
+			try { base.Dispose(disposing); }
+			// Unnecessary exception from CryptoStream with
+			// RijndaelManagedTransform when a stream hasn't been
+			// read completely (e.g. incorrect master key)
+			catch(CryptographicException) { }
+			// Similar to above, at the beginning of the stream
+			catch(IndexOutOfRangeException) { }
+			catch(Exception) { Debug.Assert(false); }
 
-            if (disposing)
-            {
-                try { if (m_t != null) { m_t.Dispose(); m_t = null; } }
-                catch (Exception) { Debug.Assert(false); }
+			if(disposing)
+			{
+				try { if(m_t != null) { m_t.Dispose(); m_t = null; } }
+				catch(Exception) { Debug.Assert(false); }
 
-                // In .NET 2.0, SymmetricAlgorithm.Dispose() is not public
-                try { if (m_a != null) { m_a.Clear(); m_a = null; } }
-                catch (Exception) { Debug.Assert(false); }
-            }
-        }
-    }
+				// In .NET 2.0, SymmetricAlgorithm.Dispose() is not public
+				try { if(m_a != null) { m_a.Clear(); m_a = null; } }
+				catch(Exception) { Debug.Assert(false); }
+			}
+		}
+	}
 }
 #endif

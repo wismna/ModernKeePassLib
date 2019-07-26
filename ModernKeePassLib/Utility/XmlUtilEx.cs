@@ -50,7 +50,7 @@ namespace ModernKeePassLib.Utility
 			xrs.IgnoreProcessingInstructions = true;
 			xrs.IgnoreWhitespace = true;
 
-#if KeePassUAP
+#if KeePassUAP || ModernKeePassLib
 			xrs.DtdProcessing = DtdProcessing.Prohibit;
 #else
 			// Also see PrepMonoDev.sh script

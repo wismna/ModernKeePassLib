@@ -3,14 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>2.41.1</Version>
+    <Version>2.42.1</Version>
     <Authors>Geoffroy Bonneville</Authors>
     <PackageLicenseUrl>https://www.gnu.org/licenses/gpl-3.0.en.html</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/wismna/ModernKeePass</PackageProjectUrl>
     <Description>Portable KeePass Password Management Library that targets .Net Standard and WinRT. Allows reading, editing and writing to KeePass 2.x databases.</Description>
     <Company>wismna</Company>
     <Product>ModernKeePassLib</Product>
-    <PackageReleaseNotes>Allow opening Storage File from FutureAccessList with a token</PackageReleaseNotes>
+    <PackageReleaseNotes>Update to version 2.42.1</PackageReleaseNotes>
     <PackageTags>KeePass KeePassLib Portable PCL NetStandard ModernKeePass</PackageTags>
     <Copyright>Copyright © 2019 Geoffroy Bonneville</Copyright>
   </PropertyGroup>

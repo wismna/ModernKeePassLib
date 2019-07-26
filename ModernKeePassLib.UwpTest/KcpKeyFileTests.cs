@@ -1,12 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Windows.Storage;
+using Windows.Storage.AccessCache;
 using ModernKeePassLib.Keys;
 using ModernKeePassLib.Utility;
-using Windows.Storage;
 using Xunit;
 
-namespace ModernKeePassLib.Test.Keys
+namespace ModernKeePassLib.UwpTest
 {
     public class KcpKeyFileTests
     {
@@ -37,17 +38,20 @@ namespace ModernKeePassLib.Test.Keys
 
             var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetTempPath());
             var file = await folder.CreateFileAsync(TestCreateFile, CreationCollisionOption.ReplaceExisting);
-            await using (var fs = await file.OpenStreamForWriteAsync())
+            var token = StorageApplicationPermissions.FutureAccessList.Add(file);
+            using (var fs = await file.OpenStreamForWriteAsync())
             {
-                await using var sw = new StreamWriter(fs);
-                sw.Write(ExpectedFileStart);
-                sw.Write(TestKey);
-                sw.Write(ExpectedFileEnd);
+                using (var sw = new StreamWriter(fs))
+                {
+                    sw.Write(ExpectedFileStart);
+                    sw.Write(TestKey);
+                    sw.Write(ExpectedFileEnd);
+                }
             }
 
             try
             {
-                var keyFile = new KcpKeyFile(file);
+                var keyFile = new KcpKeyFile(token);
                 var keyData = keyFile.KeyData.ReadData();
                 Assert.True(MemUtil.ArraysEqual(keyData, expectedKeyData));
             }
@@ -62,7 +66,8 @@ namespace ModernKeePassLib.Test.Keys
         {
             var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetTempPath());
             var file = await folder.CreateFileAsync(TestCreateFile, CreationCollisionOption.ReplaceExisting);
-            KcpKeyFile.Create(file, null);
+            var token = StorageApplicationPermissions.FutureAccessList.Add(file);
+            KcpKeyFile.Create(token, null);
             try
             {
                 var fileContents = await FileIO.ReadTextAsync(file);

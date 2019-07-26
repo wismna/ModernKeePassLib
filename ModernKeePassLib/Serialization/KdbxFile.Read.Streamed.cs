@@ -30,12 +30,13 @@ using System.Drawing;
 
 using ModernKeePassLib;
 using ModernKeePassLib.Collections;
-using ModernKeePassLib.Cryptography;
-using ModernKeePassLib.Cryptography.Cipher;
 using ModernKeePassLib.Interfaces;
 using ModernKeePassLib.Resources;
 using ModernKeePassLib.Security;
 using ModernKeePassLib.Utility;
+
+using ModernKeePassLib.Cryptography;
+using ModernKeePassLib.Cryptography.Cipher;
 
 namespace ModernKeePassLib.Serialization
 {
@@ -97,36 +98,10 @@ namespace ModernKeePassLib.Serialization
 
 		private void ReadXmlStreamed(Stream sXml, Stream sParent)
 		{
-			ReadDocumentStreamed(CreateXmlReader(sXml), sParent);
-		}
-
-		internal static XmlReaderSettings CreateStdXmlReaderSettings()
-		{
-			XmlReaderSettings xrs = new XmlReaderSettings();
-
-			xrs.CloseInput = true;
-			xrs.IgnoreComments = true;
-			xrs.IgnoreProcessingInstructions = true;
-			xrs.IgnoreWhitespace = true;
-
-#if ModernKeePassLib || KeePassUAP
-			xrs.DtdProcessing = DtdProcessing.Prohibit;
-#else
-#if !KeePassLibSD
-			// Also see PrepMonoDev.sh script
-			xrs.ProhibitDtd = true; // Obsolete in .NET 4, but still there
-			// xrs.DtdProcessing = DtdProcessing.Prohibit; // .NET 4 only
-#endif
-			xrs.ValidationType = ValidationType.None;
-#endif
-
-			return xrs;
-		}
-
-		private static XmlReader CreateXmlReader(Stream readerStream)
-		{
-			XmlReaderSettings xrs = CreateStdXmlReaderSettings();
-			return XmlReader.Create(readerStream, xrs);
+			using(XmlReader xr = XmlUtilEx.CreateXmlReader(sXml))
+			{
+				ReadDocumentStreamed(xr, sParent);
+			}
 		}
 
 		private void ReadDocumentStreamed(XmlReader xr, Stream sParentStream)
@@ -179,7 +154,7 @@ namespace ModernKeePassLib.Serialization
 				}
 
 				++uTagCounter;
-				if(((uTagCounter % 256) == 0) && bSupportsStatus)
+				if(((uTagCounter & 0xFFU) == 0) && bSupportsStatus)
 				{
 					Debug.Assert(lStreamLength == sParentStream.Length);
 					uint uPct = (uint)((sParentStream.Position * 100) /
@@ -189,7 +164,8 @@ namespace ModernKeePassLib.Serialization
 					// position/length values (M120413)
 					if(uPct > 100) { Debug.Assert(false); uPct = 100; }
 
-					m_slLogger.SetProgress(uPct);
+					if(!m_slLogger.SetProgress(uPct))
+						throw new OperationCanceledException();
 				}
 			}
 
@@ -1028,28 +1004,31 @@ namespace ModernKeePassLib.Serialization
 		private void ReadUnknown(XmlReader xr)
 		{
 			Debug.Assert(false); // Unknown node!
+			Debug.Assert(xr.NodeType == XmlNodeType.Element);
 
-			if(xr.IsEmptyElement) { m_bReadNextNode = true; return; }
+			bool bRead = false;
+			int cOpen = 0;
 
-			string strUnknownName = xr.Name;
-
-			XorredBuffer xb = ProcessNode(xr);
-			if(xb != null) { xb.Dispose(); return; } // ProcessNode sets m_bReadNextNode
-
-			bool bRead = true;
-			while(true)
+			do
 			{
 				if(bRead) xr.Read();
+				bRead = true;
 
-				if(xr.NodeType == XmlNodeType.EndElement) break;
-				if(xr.NodeType != XmlNodeType.Element) { bRead = true; continue; }
+				if(xr.NodeType == XmlNodeType.EndElement) --cOpen;
+				else if(xr.NodeType == XmlNodeType.Element)
+				{
+					if(!xr.IsEmptyElement)
+					{
+						XorredBuffer xb = ProcessNode(xr);
+						if(xb != null) { xb.Dispose(); bRead = m_bReadNextNode; continue; }
 
-				ReadUnknown(xr);
-				bRead = m_bReadNextNode;
+						++cOpen;
+					}
+				}
 			}
+			while(cOpen > 0);
 
-			Debug.Assert(xr.Name == strUnknownName); // On end tag
-			m_bReadNextNode = true;
+			m_bReadNextNode = bRead;
 		}
 
 		private XorredBuffer ProcessNode(XmlReader xr)

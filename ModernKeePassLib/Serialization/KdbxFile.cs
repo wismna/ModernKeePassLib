@@ -378,8 +378,8 @@ namespace ModernKeePassLib.Serialization
 
 				Debug.Assert(m_pwDatabase != null);
 				Debug.Assert(m_pwDatabase.MasterKey != null);
-				ProtectedBinary pbinUser = m_pwDatabase.MasterKey.GenerateKey32(
-					m_pwDatabase.KdfParameters);
+				ProtectedBinary pbinUser = m_pwDatabase.MasterKey.GenerateKey32Ex(
+					m_pwDatabase.KdfParameters, m_slLogger);
 				Debug.Assert(pbinUser != null);
 				if(pbinUser == null)
 					throw new SecurityException(KLRes.InvalidCompositeKey);
@@ -492,7 +492,7 @@ namespace ModernKeePassLib.Serialization
 		{
 			if(pb == null) { Debug.Assert(false); return; }
 
-			if(string.IsNullOrEmpty(strName)) strName = "File.bin";
+			strName = UrlUtil.GetSafeFileName(strName);
 
 			string strPath;
 			int iTry = 1;
@@ -500,8 +500,8 @@ namespace ModernKeePassLib.Serialization
 			{
 				strPath = UrlUtil.EnsureTerminatingSeparator(strSaveDir, false);
 
-				string strExt = UrlUtil.GetExtension(strName);
 				string strDesc = UrlUtil.StripExtension(strName);
+				string strExt = UrlUtil.GetExtension(strName);
 
 				strPath += strDesc;
 				if(iTry > 1)
