@@ -1,14 +1,15 @@
 ﻿using ModernKeePassLib.Keys;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Keys
 {
+    [TestFixture]
     public class KcpPasswordTests
     {
-        const string testPassword = "password";
+        private const string TestPassword = "password";
 
-        [Fact]
+        [Test]
         public void TestConstruct()
         {
             var expectedHash = new byte[32]
@@ -19,9 +20,9 @@ namespace ModernKeePassLib.Test.Keys
                 0x2A, 0x11, 0xEF, 0x72, 0x1D, 0x15, 0x42, 0xD8
             };
 
-            var key = new KcpPassword(testPassword);
+            var key = new KcpPassword(TestPassword);
             var keyData = key.KeyData.ReadData();
-            Assert.True(MemUtil.ArraysEqual(keyData, expectedHash));
+            Assert.That(MemUtil.ArraysEqual(keyData, expectedHash), Is.True);
         }
     }
 }

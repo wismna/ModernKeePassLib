@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -6,24 +7,25 @@ using ModernKeePassLib.Keys;
 using ModernKeePassLib.Security;
 using ModernKeePassLib.Serialization;
 using ModernKeePassLib.Collections;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Serialization
 {
+    [TestFixture]
     public class KdbxFileTests
     {
-        const string TestLocalizedAppName = "My Localized App Name";
+        private const string TestLocalizedAppName = "My Localized App Name";
 
-        const string TestDatabaseName = "My Database Name";
-        const string TestDatabaseDescription = "My Database Description";
-        const string TestDefaultUserName = "My Default User Name";
-        const string TestColor = "#FF0000"; // Red
+        private const string TestDatabaseName = "My Database Name";
+        private const string TestDatabaseDescription = "My Database Description";
+        private const string TestDefaultUserName = "My Default User Name";
+        private const string TestColor = "#FF0000"; // Red
 
-        const string TestRootGroupName = "My Root Group Name";
-        const string TestRootGroupNotes = "My Root Group Notes";
-        const string TestRootGroupDefaultAutoTypeSequence = "My Root Group Default Auto Type Sequence";
+        private const string TestRootGroupName = "My Root Group Name";
+        private const string TestRootGroupNotes = "My Root Group Notes";
+        private const string TestRootGroupDefaultAutoTypeSequence = "My Root Group Default Auto Type Sequence";
 
-        const string TestDatabase = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\r\n" +
+        private const string TestDatabase = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>\r\n" +
           "<KeePassFile>\r\n" +
           "\t<Meta>\r\n" +
           "\t\t<Generator>" + TestLocalizedAppName + "</Generator>\r\n" +
@@ -34,8 +36,7 @@ namespace ModernKeePassLib.Test.Serialization
           "\t\t<DefaultUserName>" + TestDefaultUserName + "</DefaultUserName>\r\n" +
           "\t\t<DefaultUserNameChanged>2017-10-23T08:03:55Z</DefaultUserNameChanged>\r\n" +
           "\t\t<MaintenanceHistoryDays>365</MaintenanceHistoryDays>\r\n" +
-          //"\t\t<Color>" + testColor + "</Color>\r\n" +
-          "\t\t<Color></Color>\r\n" +
+          "\t\t<Color>" + TestColor + "</Color>\r\n" +
           "\t\t<MasterKeyChanged>2017-10-23T08:03:55Z</MasterKeyChanged>\r\n" +
           "\t\t<MasterKeyChangeRec>-1</MasterKeyChangeRec>\r\n" +
           "\t\t<MasterKeyChangeForce>-1</MasterKeyChangeForce>\r\n" +
@@ -83,9 +84,9 @@ namespace ModernKeePassLib.Test.Serialization
           "\t</Root>\r\n" +
           "</KeePassFile>";
 
-        const string TestDate = "2017-10-23T08:03:55Z";
+        private const string TestDate = "2017-10-23T08:03:55Z";
 
-        [Fact]
+        [Test]
         public void TestLoad()
         {
             var database = new PwDatabase();
@@ -94,13 +95,13 @@ namespace ModernKeePassLib.Test.Serialization
                 var file = new KdbxFile(database);
                 file.Load(ms, KdbxFormat.PlainXml, null);
             }
-            //Assert.That(database.Color.ToArgb(), Is.EqualTo(Color.Red.ToArgb()));
-            Assert.Equal(PwCompressionAlgorithm.GZip, database.Compression);
+            Assert.That(database.Color.ToArgb(), Is.EqualTo(Color.Red.ToArgb()));
+            Assert.That(database.Compression, Is.EqualTo(PwCompressionAlgorithm.GZip));
             //Assert.That (database.CustomData, Is.EqualTo ());
             Assert.True(database.CustomIcons.Count == 0);
         }
 
-        [Fact]
+        [Test]
         public void TestSave()
         {
             var buffer = new byte[4096];
@@ -117,7 +118,7 @@ namespace ModernKeePassLib.Test.Serialization
                 database.DescriptionChanged = date;
                 database.DefaultUserName = TestDefaultUserName;
                 database.DefaultUserNameChanged = date;
-                //database.Color = Color.Red;
+                database.Color = Color.Red;
                 database.MasterKeyChanged = date;
                 database.RecycleBinChanged = date;
                 database.EntryTemplatesGroupChanged = date;
@@ -140,10 +141,10 @@ namespace ModernKeePassLib.Test.Serialization
                 // so it uses native line endings.
                 fileContents = fileContents.Replace("\n", "\r\n");
             }
-            Assert.Equal(fileContents, TestDatabase);
+            Assert.That(TestDatabase, Is.EqualTo(fileContents));
         }
 
-        [Fact]
+        [Test]
         public void TestSearch()
         {
             var database = new PwDatabase();
@@ -158,13 +159,13 @@ namespace ModernKeePassLib.Test.Serialization
             };
             var listStorage = new PwObjectList<PwEntry>();
             database.RootGroup.SearchEntries(sp, listStorage);
-            Assert.Equal(0U, listStorage.UCount);
+            Assert.That(listStorage.UCount, Is.EqualTo(0U));
             var entry = new PwEntry(true, true);
             entry.Strings.Set("Title", new ProtectedString(false, "NaMe"));
             database.RootGroup.AddEntry(entry, true);
             sp.SearchString = "name";
             database.RootGroup.SearchEntries(sp, listStorage);
-            Assert.Equal(1U, listStorage.UCount);
+            Assert.That(listStorage.UCount, Is.EqualTo(1U));
         }
     }
 }

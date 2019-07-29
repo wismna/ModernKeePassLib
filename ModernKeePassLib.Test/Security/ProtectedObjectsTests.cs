@@ -2,67 +2,68 @@
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Security;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Security
 {
+    [TestFixture]
     public class ProtectedObjectsTests
     {
         private readonly Encoding _enc = StrUtil.Utf8;
 
-        [Fact]
+        [Test]
         public void TestAreBinaryObjectsProtected()
         {
             var pbData = _enc.GetBytes("Test Test Test Test");
             var pb = new ProtectedBinary(true, pbData);
-            Assert.True(pb.IsProtected);
+            Assert.That(pb.IsProtected, Is.True);
 
             var pbDec = pb.ReadData();
-            Assert.True(MemUtil.ArraysEqual(pbData, pbDec));
-            Assert.True(pb.IsProtected);
+            Assert.That(MemUtil.ArraysEqual(pbData, pbDec), Is.True);
+            Assert.That(pb.IsProtected, Is.True);
 
             var pbData2 = _enc.GetBytes("Test Test Test Test");
             var pbData3 = _enc.GetBytes("Test Test Test Test Test");
             var pb2 = new ProtectedBinary(true, pbData2);
             var pb3 = new ProtectedBinary(true, pbData3);
-            Assert.True(pb.Equals(pb2));
-            Assert.False(pb.Equals(pb3));
-            Assert.False(pb2.Equals(pb3));
+            Assert.That(pb.Equals(pb2), Is.True);
+            Assert.That(pb.Equals(pb3), Is.False);
+            Assert.That(pb2.Equals(pb3), Is.False);
 
-            Assert.Equal(pb.GetHashCode(), pb2.GetHashCode());
-            Assert.True(pb.Equals((object) pb2));
-            Assert.False(pb.Equals((object) pb3));
-            Assert.False(pb2.Equals((object) pb3));
+            Assert.That(pb.GetHashCode(), Is.EqualTo(pb2.GetHashCode()));
+            Assert.That(pb.Equals((object) pb2), Is.True);
+            Assert.That(pb.Equals((object) pb3), Is.False);
+            Assert.That(pb2.Equals((object) pb3), Is.False);
         }
 
-        [Fact]
+        [Test]
         public void TestIsEmptyProtectedStringEmpty()
         {
             var ps = new ProtectedString();
-            Assert.Equal(0, ps.Length);
-            Assert.True(ps.IsEmpty);
-            Assert.Equal(0, ps.ReadString().Length);
+            Assert.That(ps.Length, Is.EqualTo(0));
+            Assert.That(ps.IsEmpty, Is.True);
+            Assert.That(ps.ReadString().Length, Is.EqualTo(0));
         }
 
-        [Fact]
+        [Test]
         public void TestAreEqualStringsProtected()
         {
             var ps = new ProtectedString(true, "Test");
             var ps2 = new ProtectedString(true, _enc.GetBytes("Test"));
-            Assert.False(ps.IsEmpty);
+            Assert.That(ps.IsEmpty, Is.False);
             var pbData = ps.ReadUtf8();
             var pbData2 = ps2.ReadUtf8();
-            Assert.True(MemUtil.ArraysEqual(pbData, pbData2));
-            Assert.Equal(4, pbData.Length);
-            Assert.Equal(ps.ReadString(), ps2.ReadString());
+            Assert.That(MemUtil.ArraysEqual(pbData, pbData2), Is.True);
+            Assert.That(pbData.Length, Is.EqualTo(4));
+            Assert.That(ps.ReadString(), Is.EqualTo(ps2.ReadString()));
             pbData = ps.ReadUtf8();
             pbData2 = ps2.ReadUtf8();
-            Assert.True(MemUtil.ArraysEqual(pbData, pbData2));
-            Assert.True(ps.IsProtected);
-            Assert.True(ps2.IsProtected);
+            Assert.That(MemUtil.ArraysEqual(pbData, pbData2), Is.True);
+            Assert.That(ps.IsProtected, Is.True);
+            Assert.That(ps2.IsProtected, Is.True);
         }
 
-        [Fact]
+        [Test]
         public void TestIsRandomStringProtected()
         {
             var r = CryptoRandom.NewWeakRandom();
@@ -81,8 +82,8 @@ namespace ModernKeePassLib.Test.Security
                 str = str.Insert(x, strIns);
                 ps = ps.Insert(x, strIns);
 
-                Assert.Equal(bProt, ps.IsProtected);
-                Assert.Equal(str, ps.ReadString());
+                Assert.That(ps.IsProtected, Is.EqualTo(bProt));
+                Assert.That(ps.ReadString(), Is.EqualTo(str));
 
                 ps = ps.WithProtection(bProt);
 
@@ -92,19 +93,19 @@ namespace ModernKeePassLib.Test.Security
                 str = str.Remove(x, c);
                 ps = ps.Remove(x, c);
 
-                Assert.Equal(bProt, ps.IsProtected);
-                Assert.Equal(str, ps.ReadString());
+                Assert.That(ps.IsProtected, Is.EqualTo(bProt));
+                Assert.That(ps.ReadString(), Is.EqualTo(str));
             }
         }
 
-        [Fact]
+        [Test]
         public void TestAreConcatenatedStringsProtected()
         {
             var ps = new ProtectedString(false, "ABCD");
             var ps2 = new ProtectedString(true, "EFG");
             ps += (ps2 + "HI");
-            Assert.True(ps.Equals(new ProtectedString(true, "ABCDEFGHI"), true));
-            Assert.True(ps.Equals(new ProtectedString(false, "ABCDEFGHI"), false));
+            Assert.That(ps.Equals(new ProtectedString(true, "ABCDEFGHI"), true), Is.True);
+            Assert.That(ps.Equals(new ProtectedString(false, "ABCDEFGHI"), false), Is.True);
         }
     }
 }

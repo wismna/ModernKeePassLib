@@ -1,16 +1,16 @@
 ﻿using System.IO;
 using ModernKeePassLib.Serialization;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Serialization
 {
+    [TestFixture]
     public class HashedBlockStreamTests
     {
-        static readonly byte[] data = new byte[16];
+        private static readonly byte[] Data = new byte[16];
 
-        static readonly byte[] hashStreamData = new byte[]
-        {
+        private static readonly byte[] HashStreamData = {
             // The first 4 bytes are an integer indicating the block index
             0x00, 0x00, 0x00, 0x00,
             // Then the SHA-256 hash of the data
@@ -34,38 +34,28 @@ namespace ModernKeePassLib.Test.Serialization
             0x00, 0x00, 0x00, 0x00
         };
 
-        [Fact]
+        [Test]
         public void TestRead()
         {
-            using (var ms = new MemoryStream(hashStreamData))
-            {
-                using (var hbs = new HashedBlockStream(ms, false))
-                {
-                    using (var br = new BinaryReader(hbs))
-                    {
-                        var bytes = br.ReadBytes(data.Length);
-                        Assert.True(MemUtil.ArraysEqual(bytes, data));
-                        Assert.Throws<EndOfStreamException>(() => br.ReadByte());
-                    }
-                }
-            }
+            using var ms = new MemoryStream(HashStreamData);
+            using var hbs = new HashedBlockStream(ms, false);
+            using var br = new BinaryReader(hbs);
+            var bytes = br.ReadBytes(Data.Length);
+            Assert.That(MemUtil.ArraysEqual(bytes, Data), Is.True);
+            Assert.Throws<EndOfStreamException>(() => br.ReadByte());
         }
 
-        [Fact]
+        [Test]
         public void TestWrite()
         {
-            var buffer = new byte[hashStreamData.Length];
-            using (var ms = new MemoryStream(buffer))
+            var buffer = new byte[HashStreamData.Length];
+            using var ms = new MemoryStream(buffer);
+            using (var hbs = new HashedBlockStream(ms, true))
             {
-                using (var hbs = new HashedBlockStream(ms, true))
-                {
-                    using (var bw = new BinaryWriter(hbs))
-                    {
-                        bw.Write(data);
-                    }
-                }
-                Assert.True(MemUtil.ArraysEqual(buffer, hashStreamData));
+                using var bw = new BinaryWriter(hbs);
+                bw.Write(Data);
             }
+            Assert.That(MemUtil.ArraysEqual(buffer, HashStreamData), Is.True);
         }
     }
 }

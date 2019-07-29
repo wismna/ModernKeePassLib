@@ -1,16 +1,17 @@
 ﻿using System.IO;
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Cryptography
 {
+    [TestFixture]
     public class HashingStreamExTests
     {
-        const string data = "test";
+        private const string Data = "test";
 
         // The expected hash includes the \n added by WriteLine
-        static readonly byte[] sha256HashOfData =
+        private static readonly byte[] Sha256HashOfData =
         {
             0xf2, 0xca, 0x1b, 0xb6, 0xc7, 0xe9, 0x07, 0xd0,
             0x6d, 0xaf, 0xe4, 0x68, 0x7e, 0x57, 0x9f, 0xce,
@@ -18,63 +19,52 @@ namespace ModernKeePassLib.Test.Cryptography
             0x22, 0xda, 0x52, 0xe6, 0xcc, 0xc2, 0x6f, 0xd2
         };
 
-        [Fact]
+        [Test]
         public void TestRead()
         {
             // if we use larger size, StreamReader will read past newline and cause bad hash
-            var bytes = new byte[data.Length + 1];
-            using (var ms = new MemoryStream(bytes))
+            var bytes = new byte[Data.Length + 1];
+            using (var memoryStream1 = new MemoryStream(bytes))
             {
-                using (var sw = new StreamWriter(ms))
-                {
-                    // set NewLine to ensure we don't run into cross-platform issues on Windows
-                    sw.NewLine = "\n";
-                    sw.WriteLine(data);
-                }
+                using var sw = new StreamWriter(memoryStream1);
+                // set NewLine to ensure we don't run into cross-platform issues on Windows
+                sw.NewLine = "\n";
+                sw.WriteLine(Data);
             }
-            using (var ms = new MemoryStream(bytes))
+
+            using var memoryStream2 = new MemoryStream(bytes);
+            using var hs = new HashingStreamEx(memoryStream2, false, null);
+            using (var sr = new StreamReader(hs))
             {
-                using (var hs = new HashingStreamEx(ms, false, null))
-                {
-                    using (var sr = new StreamReader(hs))
-                    {
-                        var read = sr.ReadLine();
-                        Assert.Equal(read, data);
-                    }
-                    // When the StreamReader is disposed, it calls Dispose on the
-                    //HasingStreamEx, which computes the hash.
-                    Assert.True(MemUtil.ArraysEqual(hs.Hash, sha256HashOfData));
-                }
+                var read = sr.ReadLine();
+                Assert.That(read, Is.EqualTo(Data));
             }
+            // When the StreamReader is disposed, it calls Dispose on the HasingStreamEx, which computes the hash.
+            Assert.That(MemUtil.ArraysEqual(hs.Hash, Sha256HashOfData), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void TestWrite()
         {
             var bytes = new byte[16];
-            using (var ms = new MemoryStream(bytes))
+            using (var memoryStream1 = new MemoryStream(bytes))
             {
-                using (var hs = new HashingStreamEx(ms, true, null))
+                using var hs = new HashingStreamEx(memoryStream1, true, null);
+                using (var sw = new StreamWriter(hs))
                 {
-                    using (var sw = new StreamWriter(hs))
-                    {
-                        // set NewLine to ensure we don't run into cross-platform issues on Windows
-                        sw.NewLine = "\n";
-                        sw.WriteLine(data);
-                    }
-                    // When the StreamWriter is disposed, it calls Dispose on the
-                    //HasingStreamEx, which computes the hash.
-                    Assert.True(MemUtil.ArraysEqual(hs.Hash, sha256HashOfData));
+                    // set NewLine to ensure we don't run into cross-platform issues on Windows
+                    sw.NewLine = "\n";
+                    sw.WriteLine(Data);
                 }
+                // When the StreamWriter is disposed, it calls Dispose on the HasingStreamEx, which computes the hash.
+                Assert.True(MemUtil.ArraysEqual(hs.Hash, Sha256HashOfData));
             }
-            using (var ms = new MemoryStream(bytes))
-            {
-                using (var sr = new StreamReader(ms))
-                {
-                    var read = sr.ReadLine();
-                    Assert.Equal(read, data);
-                }
-            }
+
+            using var memoryStream2 = new MemoryStream(bytes);
+            using var sr = new StreamReader(memoryStream2);
+            var read = sr.ReadLine();
+
+            Assert.That(read, Is.EqualTo(Data));
         }
     }
 }

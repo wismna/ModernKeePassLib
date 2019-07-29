@@ -1,24 +1,36 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Cryptography.Hash;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Cryptography.Hash
 {
+    [TestFixture]
     public class Blake2bTests
     {
-        [Fact]
+        private Blake2b _blake2bHash;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _blake2bHash = new Blake2b();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _blake2bHash.Clear();
+        }
+
+        [Test]
         public void TestBlake2bUtf8()
         {
-            Blake2b h = new Blake2b();
-
             // ======================================================
             // From https://tools.ietf.org/html/rfc7693
 
-            byte[] pbData = StrUtil.Utf8.GetBytes("abc");
-            byte[] pbExpc = new byte[64]
+            var pbData = StrUtil.Utf8.GetBytes("abc");
+            var pbExpc = new byte[]
             {
                 0xBA, 0x80, 0xA5, 0x3F, 0x98, 0x1C, 0x4D, 0x0D,
                 0x6A, 0x27, 0x97, 0xB6, 0x9F, 0x12, 0xF6, 0xE9,
@@ -30,18 +42,17 @@ namespace ModernKeePassLib.Test.Cryptography.Hash
                 0xB9, 0x23, 0x86, 0xED, 0xD4, 0x00, 0x99, 0x23
             };
 
-            byte[] pbC = h.ComputeHash(pbData);
-            Assert.True(MemUtil.ArraysEqual(pbC, pbExpc));
+            var pbC = _blake2bHash.ComputeHash(pbData);
+            Assert.That(MemUtil.ArraysEqual(pbC, pbExpc), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void TestBlake2bEmpty()
         {
             // ======================================================
             // Computed using the official b2sum tool
-            Blake2b h = new Blake2b();
 
-            var pbExpc = new byte[64]
+            var pbExpc = new byte[]
             {
                 0x78, 0x6A, 0x02, 0xF7, 0x42, 0x01, 0x59, 0x03,
                 0xC6, 0xC6, 0xFD, 0x85, 0x25, 0x52, 0xD2, 0x72,
@@ -53,23 +64,22 @@ namespace ModernKeePassLib.Test.Cryptography.Hash
                 0xD5, 0x6F, 0x70, 0x1A, 0xFE, 0x9B, 0xE2, 0xCE
             };
 
-            var pbC = h.ComputeHash(new byte[0]);
-            Assert.True(MemUtil.ArraysEqual(pbC, pbExpc));
+            var pbC = _blake2bHash.ComputeHash(new byte[0]);
+            Assert.That(MemUtil.ArraysEqual(pbC, pbExpc), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void TestBlake2bString()
         { 
         // ======================================================
             // Computed using the official b2sum tool
-            Blake2b h = new Blake2b();
 
-            string strS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:,;_-\r\n";
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < 1000; ++i) sb.Append(strS);
+            var strS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.:,;_-\r\n";
+            var sb = new StringBuilder();
+            for (var i = 0; i < 1000; ++i) sb.Append(strS);
             var pbData = StrUtil.Utf8.GetBytes(sb.ToString());
 
-            var pbExpc = new byte[64] {
+            var pbExpc = new byte[] {
                 0x59, 0x69, 0x8D, 0x3B, 0x83, 0xF4, 0x02, 0x4E,
                 0xD8, 0x99, 0x26, 0x0E, 0xF4, 0xE5, 0x9F, 0x20,
                 0xDC, 0x31, 0xEE, 0x5B, 0x45, 0xEA, 0xBB, 0xFC,
@@ -80,21 +90,19 @@ namespace ModernKeePassLib.Test.Cryptography.Hash
                 0x3F, 0x08, 0x8A, 0x93, 0xF8, 0x75, 0x91, 0xB0
             };
 
-            Random r = CryptoRandom.NewWeakRandom();
-            int p = 0;
+            var r = CryptoRandom.NewWeakRandom();
+            var p = 0;
             while (p < pbData.Length)
             {
-                int cb = r.Next(1, pbData.Length - p + 1);
-                h.TransformBlock(pbData, p, cb, pbData, p);
+                var cb = r.Next(1, pbData.Length - p + 1);
+                _blake2bHash.TransformBlock(pbData, p, cb, pbData, p);
                 p += cb;
             }
-            Assert.Equal(p, pbData.Length);
+            Assert.That(p, Is.EqualTo(pbData.Length));
 
-            h.TransformFinalBlock(new byte[0], 0, 0);
+            _blake2bHash.TransformFinalBlock(new byte[0], 0, 0);
 
-            Assert.True(MemUtil.ArraysEqual(h.Hash, pbExpc));
-
-            h.Clear();
+            Assert.That(MemUtil.ArraysEqual(_blake2bHash.Hash, pbExpc), Is.True);
         }
     }
 }

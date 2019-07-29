@@ -1,13 +1,15 @@
-﻿using ModernKeePassLib.Utility;
+﻿using System.Linq;
+using ModernKeePassLib.Utility;
 using System.Security.Cryptography;
 using ModernKeePassLib.Cryptography;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Cryptography.Hash
 {
+    [TestFixture]
     public class ShaManagedTests
     {
-        [Fact]
+        [Test]
         public void TestSha256()
         {
             var r = CryptoRandom.NewWeakRandom();
@@ -34,39 +36,31 @@ namespace ModernKeePassLib.Test.Cryptography.Hash
                 pbH2 = h2.ComputeHash(pbData);
             }
 
-            Assert.True(MemUtil.ArraysEqual(pbH1, pbH2));
+            Assert.That(MemUtil.ArraysEqual(pbH1, pbH2), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void TestSha256ComputeHash()
         {
             var expectedHash = "B822F1CD2DCFC685B47E83E3980289FD5D8E3FF3A82DEF24D7D1D68BB272EB32";
             var message = StrUtil.Utf8.GetBytes("testing123");
-            using (var result = new SHA256Managed())
-            {
-                Assert.Equal(ByteToString(result.ComputeHash(message)), expectedHash);
-            }
+            using var result = new SHA256Managed();
+            Assert.That(expectedHash, Is.EqualTo(ByteToString(result.ComputeHash(message))));
         }
 
-        [Fact]
+        [Test]
         public void TestSha512ComputeHash()
         {
             var expectedHash = "4120117B3190BA5E24044732B0B09AA9ED50EB1567705ABCBFA78431A4E0A96B1152ED7F4925966B1C82325E186A8100E692E6D2FCB6702572765820D25C7E9E";
             var message = StrUtil.Utf8.GetBytes("testing123");
-            using (var result = new SHA512Managed())
-            {
-                Assert.Equal(ByteToString(result.ComputeHash(message)), expectedHash);
-            }
+            using var result = new SHA512Managed();
+            Assert.That(expectedHash, Is.EqualTo(ByteToString(result.ComputeHash(message))));
         }
 
         private static string ByteToString(byte[] buff)
         {
-            var sbinary = "";
+            var sbinary = buff.Aggregate("", (current, t) => current + t.ToString("X2"));
 
-            for (var i = 0; i < buff.Length; i++)
-            {
-                sbinary += buff[i].ToString("X2"); // hex format
-            }
             return (sbinary);
         }
     }

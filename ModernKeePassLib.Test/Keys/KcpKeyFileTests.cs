@@ -4,12 +4,14 @@ using System.Threading.Tasks;
 using ModernKeePassLib.Keys;
 using ModernKeePassLib.Utility;
 using Windows.Storage;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Keys
 {
+    [TestFixture]
     public class KcpKeyFileTests
     {
+        private StorageFile _file;
         private const string TestCreateFile = "TestCreate.xml";
         private const string TestKey = "0123456789";
 
@@ -24,7 +26,20 @@ namespace ModernKeePassLib.Test.Keys
 
         private const string ExpectedFileEnd = "</Data>\r\n\t</Key>\r\n</KeyFile>";
 
-        [Fact]
+        [SetUp]
+        public async Task SetUp()
+        {
+            var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetTempPath());
+            _file = await folder.CreateFileAsync(TestCreateFile, CreationCollisionOption.ReplaceExisting);
+        }
+
+        [TearDown]
+        public async Task TearDown()
+        {
+            await _file.DeleteAsync();
+        }
+
+        [Test]
         public async Task TestConstruct()
         {
             var expectedKeyData = new byte[]
@@ -35,9 +50,7 @@ namespace ModernKeePassLib.Test.Keys
                 0x45, 0xfc, 0xc8, 0x92, 0xbd, 0xeb, 0xaf, 0xc3
             };
 
-            var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetTempPath());
-            var file = await folder.CreateFileAsync(TestCreateFile, CreationCollisionOption.ReplaceExisting);
-            await using (var fs = await file.OpenStreamForWriteAsync())
+            await using (var fs = await _file.OpenStreamForWriteAsync())
             {
                 await using var sw = new StreamWriter(fs);
                 sw.Write(ExpectedFileStart);
@@ -45,36 +58,20 @@ namespace ModernKeePassLib.Test.Keys
                 sw.Write(ExpectedFileEnd);
             }
 
-            try
-            {
-                var keyFile = new KcpKeyFile(file);
-                var keyData = keyFile.KeyData.ReadData();
-                Assert.True(MemUtil.ArraysEqual(keyData, expectedKeyData));
-            }
-            finally
-            {
-                await file.DeleteAsync();
-            }
+            var keyFile = new KcpKeyFile(_file);
+            var keyData = keyFile.KeyData.ReadData();
+            Assert.That(MemUtil.ArraysEqual(keyData, expectedKeyData), Is.True);
         }
 
-        [Fact]
+        [Test]
         public async Task TestCreate()
         {
-            var folder = await StorageFolder.GetFolderFromPathAsync(Path.GetTempPath());
-            var file = await folder.CreateFileAsync(TestCreateFile, CreationCollisionOption.ReplaceExisting);
-            KcpKeyFile.Create(file, null);
-            try
-            {
-                var fileContents = await FileIO.ReadTextAsync(file);
+            KcpKeyFile.Create(_file, null);
+            var fileContents = await FileIO.ReadTextAsync(_file);
 
-                Assert.Equal(185, fileContents.Length);
-                Assert.StartsWith(ExpectedFileStart, fileContents);
-                Assert.EndsWith(ExpectedFileEnd, fileContents);
-            }
-            finally
-            {
-                await file.DeleteAsync();
-            }
+            Assert.That(fileContents.Length, Is.EqualTo(185));
+            Assert.That(fileContents.StartsWith(ExpectedFileStart), Is.True);
+            Assert.That(fileContents.EndsWith(ExpectedFileEnd), Is.True);
         }
     }
 }

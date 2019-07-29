@@ -1,13 +1,14 @@
 ﻿using ModernKeePassLib.Cryptography.KeyDerivation;
 using ModernKeePassLib.Keys;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Keys
 {
+    [TestFixture]
     public class CompositeKeyTests
     {
-        [Fact]
+        [Test]
         public void TestGenerateKey32()
         {
             var originalKey = new byte[32];
@@ -21,14 +22,14 @@ namespace ModernKeePassLib.Test.Keys
             const ulong rounds = 1;
 
             var composite = new CompositeKey();
-            AesKdf kdf = new AesKdf();
-            KdfParameters p = kdf.GetDefaultParameters();
+            var kdf = new AesKdf();
+            var p = kdf.GetDefaultParameters();
             p.SetUInt64(AesKdf.ParamRounds, rounds);
             p.SetByteArray(AesKdf.ParamSeed, originalKey);
             var key = composite.GenerateKey32(p);
-            Assert.NotNull(key);
+            Assert.That(key, Is.Not.Null);
             var keyData = key.ReadData();
-            Assert.True(MemUtil.ArraysEqual(keyData, expectedKey));
+            Assert.That(MemUtil.ArraysEqual(keyData, expectedKey), Is.True);
         }
     }
 }

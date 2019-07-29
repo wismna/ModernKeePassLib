@@ -1,9 +1,8 @@
-﻿using System;
-using ModernKeePassLib.Utility;
-using Xunit;
+﻿using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Utility
 {
+    [TestFixture]
     public class GfxUtilTests
     {
         // 16x16 all white PNG file, base64 encoded
@@ -13,7 +12,7 @@ namespace ModernKeePassLib.Test.Utility
             "VkIHdpdGggR0lNUFeBDhcAAAAaSURBVCjPY/z//z8DKYCJgUQwqmFUw9DRAABVb" +
             "QMdny4VogAAAABJRU5ErkJggg==";
 
-        //[Fact]
+        //[Test]
         //public void TestLoadImage ()
         //{
         //    var testData = Convert.FromBase64String (testImageData);

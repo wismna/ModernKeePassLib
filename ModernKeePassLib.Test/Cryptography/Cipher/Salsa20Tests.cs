@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Cryptography.Cipher;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Cryptography.Cipher
 {
+    [TestFixture]
     public class Salsa20Tests
     {
-        [Fact]
+        [Test]
         public void TestSalsa20Cipher()
         {
             var r = CryptoRandom.NewWeakRandom();
@@ -31,7 +32,7 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
             var pb = new byte[16];
             var c = new Salsa20Cipher(pbKey, pbIv);
             c.Encrypt(pb, 0, pb.Length);
-            Assert.True(MemUtil.ArraysEqual(pb, pbExpected));
+            Assert.That(MemUtil.ArraysEqual(pb, pbExpected), Is.True);
 
             // Extended test
             var pbExpected2 = new byte[] {
@@ -46,12 +47,12 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
             var nPos = Salsa20ToPos(c, r, pb.Length, 65536);
             Array.Clear(pb, 0, pb.Length);
             c.Encrypt(pb, 0, pb.Length);
-            Assert.True(MemUtil.ArraysEqual(pb, pbExpected2));
+            Assert.That(MemUtil.ArraysEqual(pb, pbExpected2), Is.True);
 
             Salsa20ToPos(c, r, nPos + pb.Length, 131008);
             Array.Clear(pb, 0, pb.Length);
             c.Encrypt(pb, 0, pb.Length);
-            Assert.True(MemUtil.ArraysEqual(pb, pbExpected3));
+            Assert.That(MemUtil.ArraysEqual(pb, pbExpected3), Is.True);
 
             var d = new Dictionary<string, bool>();
             const int nRounds = 100;
@@ -62,7 +63,7 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
                 c.Encrypt(z, 0, z.Length);
                 d[MemUtil.ByteArrayToHexString(z)] = true;
             }
-            Assert.Equal(nRounds, d.Count);
+            Assert.That(d.Count, Is.EqualTo(nRounds));
         }
 
         private static int Salsa20ToPos(Salsa20Cipher c, Random r, int nPos,

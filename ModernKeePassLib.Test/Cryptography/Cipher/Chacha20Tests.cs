@@ -4,13 +4,14 @@ using System.IO;
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Cryptography.Cipher;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Cryptography.Cipher
 {
+    [TestFixture]
     public class Chacha20Tests
     {
-        [Fact]
+        [Test]
         public void TestChacha20Cipher()
         {
             // ======================================================
@@ -23,7 +24,7 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
             pbIV[3] = 0x09;
             pbIV[7] = 0x4A;
 
-            var pbExpc = new byte[64] {
+            var pbExpc = new byte[] {
                 0x10, 0xF1, 0xE7, 0xE4, 0xD1, 0x3B, 0x59, 0x15,
                 0x50, 0x0F, 0xDD, 0x1F, 0xA3, 0x20, 0x71, 0xC4,
                 0xC7, 0xD1, 0xF4, 0xC7, 0x33, 0xC0, 0x68, 0x03,
@@ -36,12 +37,12 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
 
             var pb = new byte[64];
 
-            using (var c = new ChaCha20Cipher(pbKey, pbIV))
+            using (var chaCha20Cipher1 = new ChaCha20Cipher(pbKey, pbIV))
             {
-                c.Seek(64, SeekOrigin.Begin); // Skip first block
-                c.Encrypt(pb, 0, pb.Length);
+                chaCha20Cipher1.Seek(64, SeekOrigin.Begin); // Skip first block
+                chaCha20Cipher1.Encrypt(pb, 0, pb.Length);
 
-                Assert.True(MemUtil.ArraysEqual(pb, pbExpc));
+                Assert.That(MemUtil.ArraysEqual(pb, pbExpc), Is.True);
             }
 
 #if DEBUG
@@ -74,12 +75,12 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
 
             var pb64 = new byte[64];
 
-            using (var c = new ChaCha20Cipher(pbKey, pbIV))
+            using (var chaCha20Cipher2 = new ChaCha20Cipher(pbKey, pbIV))
             {
-                c.Encrypt(pb64, 0, pb64.Length); // Skip first block
-                c.Encrypt(pb, 0, pb.Length);
+                chaCha20Cipher2.Encrypt(pb64, 0, pb64.Length); // Skip first block
+                chaCha20Cipher2.Encrypt(pb, 0, pb.Length);
 
-                Assert.True(MemUtil.ArraysEqual(pb, pbExpc));
+                Assert.That(MemUtil.ArraysEqual(pb, pbExpc), Is.True);
             }
 
             // ======================================================
@@ -116,17 +117,17 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
 
             using (var msEnc = new MemoryStream())
             {
-                using (var c = new ChaCha20Stream(msEnc, true, pbKey, pbIV))
+                using (var chaCha20Stream = new ChaCha20Stream(msEnc, true, pbKey, pbIV))
                 {
                     var r = CryptoRandom.NewWeakRandom();
                     r.NextBytes(pb64);
-                    c.Write(pb64, 0, pb64.Length); // Skip first block
+                    chaCha20Stream.Write(pb64, 0, pb64.Length); // Skip first block
 
                     var p = 0;
                     while (p < pb.Length)
                     {
                         var cb = r.Next(1, pb.Length - p + 1);
-                        c.Write(pb, p, cb);
+                        chaCha20Stream.Write(pb, p, cb);
                         p += cb;
                     }
                     Debug.Assert(p == pb.Length);
@@ -134,27 +135,22 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
 
                 var pbEnc0 = msEnc.ToArray();
                 var pbEnc = MemUtil.Mid(pbEnc0, 64, pbEnc0.Length - 64);
-                Assert.True(MemUtil.ArraysEqual(pbEnc, pbExpc));
+                Assert.That(MemUtil.ArraysEqual(pbEnc, pbExpc), Is.True);
 
-                using (var msCT = new MemoryStream(pbEnc0, false))
-                {
-                    using (var cDec = new ChaCha20Stream(msCT, false,
-                        pbKey, pbIV))
-                    {
-                        var pbPT = MemUtil.Read(cDec, pbEnc0.Length);
+                using var msCT = new MemoryStream(pbEnc0, false);
+                using var cDec = new ChaCha20Stream(msCT, false, pbKey, pbIV);
+                var pbPT = MemUtil.Read(cDec, pbEnc0.Length);
 
-                        Assert.True(cDec.ReadByte() < 0);
-                        Assert.True(MemUtil.ArraysEqual(MemUtil.Mid(pbPT, 0, 64), pb64));
-                        Assert.True(MemUtil.ArraysEqual(MemUtil.Mid(pbPT, 64, pbEnc.Length), pb));
-                    }
-                }
+                Assert.That(cDec.ReadByte(), Is.LessThan(0));
+                Assert.That(MemUtil.ArraysEqual(MemUtil.Mid(pbPT, 0, 64), pb64), Is.True);
+                Assert.That(MemUtil.ArraysEqual(MemUtil.Mid(pbPT, 64, pbEnc.Length), pb), Is.True);
             }
 
             // ======================================================
             // Test vector TC8 from RFC draft by J. Strombergson:
             // https://tools.ietf.org/html/draft-strombergson-chacha-test-vectors-01
 
-            pbKey = new byte[32] {
+            pbKey = new byte[] {
                 0xC4, 0x6E, 0xC1, 0xB1, 0x8C, 0xE8, 0xA8, 0x78,
                 0x72, 0x5A, 0x37, 0xE7, 0x80, 0xDF, 0xB7, 0x35,
                 0x1F, 0x68, 0xED, 0x2E, 0x19, 0x4C, 0x79, 0xFB,
@@ -165,13 +161,13 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
             // is used; this makes the RFC 7539 version of ChaCha20
             // compatible with the original specification by
             // D. J. Bernstein.
-            pbIV = new byte[12] { 0x00, 0x00, 0x00, 0x00,
+            pbIV = new byte[] { 0x00, 0x00, 0x00, 0x00,
                 0x1A, 0xDA, 0x31, 0xD5, 0xCF, 0x68, 0x82, 0x21
             };
 
             pb = new byte[128];
 
-            pbExpc = new byte[128] {
+            pbExpc = new byte[] {
                 0xF6, 0x3A, 0x89, 0xB7, 0x5C, 0x22, 0x71, 0xF9,
                 0x36, 0x88, 0x16, 0x54, 0x2B, 0xA5, 0x2F, 0x06,
                 0xED, 0x49, 0x24, 0x17, 0x92, 0x30, 0x2B, 0x00,
@@ -191,12 +187,10 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
                 0x05, 0x3C, 0x84, 0xE4, 0x9A, 0x4A, 0x33, 0x32
             };
 
-            using (var c = new ChaCha20Cipher(pbKey, pbIV, true))
-            {
-                c.Decrypt(pb, 0, pb.Length);
+            using var c = new ChaCha20Cipher(pbKey, pbIV, true);
+            c.Decrypt(pb, 0, pb.Length);
 
-                Assert.True(MemUtil.ArraysEqual(pb, pbExpc));
-            }
+            Assert.That(MemUtil.ArraysEqual(pb, pbExpc), Is.True);
 #endif
         }
     }

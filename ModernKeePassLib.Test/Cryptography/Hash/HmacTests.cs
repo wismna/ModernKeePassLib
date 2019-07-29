@@ -1,13 +1,15 @@
-﻿using ModernKeePassLib.Cryptography;
+﻿using System.Linq;
+using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Utility;
 using System.Security.Cryptography;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Cryptography.Hash
 {
+    [TestFixture]
     public class HmacTests
     {
-        [Fact]
+        [Test]
         public void TestHmac1()
         {
             // Test vectors from RFC 4231
@@ -25,7 +27,7 @@ namespace ModernKeePassLib.Test.Cryptography.Hash
             HmacEval(pbKey, pbMsg, pbExpc);
         }
 
-        [Fact]
+        [Test]
         public void TestHmac2()
         {
             var pbKey = new byte[131];
@@ -43,74 +45,65 @@ namespace ModernKeePassLib.Test.Cryptography.Hash
             HmacEval(pbKey, pbMsg, pbExpc);
         }
 
-        [Fact]
+        [Test]
         public void TestHmacSha1ComputeHash()
         {
             var expectedHash = "AC2C2E614882CE7158F69B7E3B12114465945D01";
             var message = StrUtil.Utf8.GetBytes("testing123");
             var key = StrUtil.Utf8.GetBytes("hello");
-            using (var result = new HMACSHA1(key))
-            {
-                Assert.Equal(ByteToString(result.ComputeHash(message)), expectedHash);
-            }
+            using var result = new HMACSHA1(key);
+            Assert.That(expectedHash, Is.EqualTo(ByteToString(result.ComputeHash(message))));
         }
 
-        [Fact]
+        [Test]
         public void TestHmacSha256ComputeHash()
         {
             var expectedHash = "09C1BD2DE4E5659C0EFAF9E6AE4723E9CF96B69609B4E562F6AFF1745D7BF4E0";
             var message = StrUtil.Utf8.GetBytes("testing123");
             var key = StrUtil.Utf8.GetBytes("hello");
-            using (var result = new HMACSHA256(key))
-            {
-                Assert.Equal(ByteToString(result.ComputeHash(message)), expectedHash);
-            }
+            using var result = new HMACSHA256(key);
+            Assert.That(expectedHash, Is.EqualTo(ByteToString(result.ComputeHash(message))));
         }
 
         private static string ByteToString(byte[] buff)
         {
-            string sbinary = "";
-
-            for (int i = 0; i < buff.Length; i++)
-            {
-                sbinary += buff[i].ToString("X2"); // hex format
-            }
-            return (sbinary);
+            return buff.Aggregate("", (current, t) => current + t.ToString("X2"));
         }
 
-        [Fact]
-        public void TestHmacOtp()
+        [Test]
+        [TestCase(0, ExpectedResult = "755224")]
+        [TestCase(1, ExpectedResult = "287082")]
+        [TestCase(2, ExpectedResult = "359152")]
+        [TestCase(3, ExpectedResult = "969429")]
+        [TestCase(4, ExpectedResult = "338314")]
+        [TestCase(5, ExpectedResult = "254676")]
+        [TestCase(6, ExpectedResult = "287922")]
+        [TestCase(7, ExpectedResult = "162583")]
+        [TestCase(8, ExpectedResult = "399871")]
+        [TestCase(9, ExpectedResult = "520489")]
+        public string TestHmacOtp(int factor)
         {
             var pbSecret = StrUtil.Utf8.GetBytes("12345678901234567890");
-            var vExp = new []{ "755224", "287082", "359152",
-                "969429", "338314", "254676", "287922", "162583", "399871",
-                "520489" };
-
-            for (var i = 0; i < vExp.Length; ++i)
-            {
-                Assert.Equal(HmacOtp.Generate(pbSecret, (ulong)i, 6, false, -1), vExp[i]);
-            }
+            return HmacOtp.Generate(pbSecret, (ulong)factor, 6, false, -1);
         }
 
         private static void HmacEval(byte[] pbKey, byte[] pbMsg,
             byte[] pbExpc)
         {
-            using (var h = new HMACSHA256(pbKey))
-            {
-                h.TransformBlock(pbMsg, 0, pbMsg.Length, pbMsg, 0);
-                h.TransformFinalBlock(new byte[0], 0, 0);
+            using var h = new HMACSHA256(pbKey);
+            h.TransformBlock(pbMsg, 0, pbMsg.Length, pbMsg, 0);
+            h.TransformFinalBlock(new byte[0], 0, 0);
 
-                byte[] pbHash = h.Hash;
-                Assert.True(MemUtil.ArraysEqual(pbHash, pbExpc));
+            var pbHash = h.Hash;
+            Assert.That(MemUtil.ArraysEqual(pbHash, pbExpc), Is.True);
 
-                // Reuse the object
-                h.Initialize();
-                h.TransformBlock(pbMsg, 0, pbMsg.Length, pbMsg, 0);
-                h.TransformFinalBlock(new byte[0], 0, 0);
+            // Reuse the object
+            h.Initialize();
+            h.TransformBlock(pbMsg, 0, pbMsg.Length, pbMsg, 0);
+            h.TransformFinalBlock(new byte[0], 0, 0);
 
-                pbHash = h.Hash;
-                Assert.True(MemUtil.ArraysEqual(pbHash, pbExpc));
-            }
+            pbHash = h.Hash;
+            Assert.That(MemUtil.ArraysEqual(pbHash, pbExpc), Is.True);
         }
     }
 }

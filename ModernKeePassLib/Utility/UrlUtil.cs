@@ -69,7 +69,7 @@ namespace ModernKeePassLib.Utility
 
 					if(!l.Contains(UrlUtil.LocalDirSepChar))
 					{
-						Debug.Assert(false);
+						//Debug.Assert(false);
 						l.Add(UrlUtil.LocalDirSepChar);
 					}
 

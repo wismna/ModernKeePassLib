@@ -1,16 +1,15 @@
 ﻿using System.IO;
+using System.Security.Cryptography;
 using System.Text;
+using NUnit.Framework;
 using ModernKeePassLib.Serialization;
+using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Cryptography.Cipher;
 using ModernKeePassLib.Utility;
-using Org.BouncyCastle.Crypto.Engines;
-using Org.BouncyCastle.Crypto.Parameters;
-using Xunit;
-using System.Security.Cryptography;
-using ModernKeePassLib.Cryptography;
 
 namespace ModernKeePassLib.Test.Cryptography.Cipher
 {
+    [TestFixture]
     public class AesTests
     {
         // Test vector (official ECB test vector #356)
@@ -27,7 +26,7 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
 
-        [Fact]
+        [Test]
         public void TestEncryptStream()
         {
             var a = CryptoUtil.CreateAes();
@@ -45,35 +44,20 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
 
             iCrypt.TransformBlock(_pbTestData, 0, 16, _pbTestData, 0);
 
-            Assert.True(MemUtil.ArraysEqual(_pbTestData, _pbReferenceCt));
+            Assert.That(MemUtil.ArraysEqual(_pbTestData, _pbReferenceCt), Is.True);
         }
 
-        [Fact]
+        [Test]
         public void TestDecryptStream()
         {
             // Possible Mono Bug? This only works with size >= 48
-            using (var inStream = new MemoryStream(new byte[32]))
-            {
-                inStream.Write(_pbReferenceCt, 0, _pbReferenceCt.Length);
-                inStream.Position = 0;
-                var aes = new StandardAesEngine();
-                using (var outStream = aes.DecryptStream(inStream, _pbTestKey, _pbIv))
-                {
-                    var outBytes = new BinaryReaderEx(outStream, Encoding.UTF8, string.Empty).ReadBytes(16);
-                    Assert.True(MemUtil.ArraysEqual(outBytes, _pbTestData));
-                }
-            }
-        }
-
-        [Fact]
-        public void TestBouncyCastleAes()
-        {
-            var aesEngine = new AesEngine();
-            //var parametersWithIv = new ParametersWithIV(new KeyParameter(pbTestKey), pbIV);
-            aesEngine.Init(true, new KeyParameter(_pbTestKey));
-            Assert.Equal(_pbTestData.Length, aesEngine.GetBlockSize());
-            aesEngine.ProcessBlock(_pbTestData, 0, _pbTestData, 0);
-            Assert.True(MemUtil.ArraysEqual(_pbReferenceCt,_pbTestData));
+            using var inStream = new MemoryStream(new byte[32]);
+            inStream.Write(_pbReferenceCt, 0, _pbReferenceCt.Length);
+            inStream.Position = 0;
+            var aes = new StandardAesEngine();
+            using var outStream = aes.DecryptStream(inStream, _pbTestKey, _pbIv);
+            var outBytes = new BinaryReaderEx(outStream, Encoding.UTF8, string.Empty).ReadBytes(16);
+            Assert.That(MemUtil.ArraysEqual(outBytes, _pbTestData), Is.True);
         }
     }
 }

@@ -1,17 +1,18 @@
 ﻿using ModernKeePassLib.Keys;
 using ModernKeePassLib.Utility;
-using Xunit;
+using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Keys
 {
+    [TestFixture]
     public class KcpCustomKeyTests
     {
-        static readonly byte[] testData =
+        private static readonly byte[] TestData =
         {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
 
-        [Fact]
+        [Test]
         public void TestConstruct()
         {
             var expectedHash = new byte[32]
@@ -22,13 +23,13 @@ namespace ModernKeePassLib.Test.Keys
                 0xE5, 0xB2, 0x32, 0x8D, 0xE0, 0xE8, 0x3D, 0xFC
             };
 
-            var key = new KcpCustomKey("test1", testData, false);
+            var key = new KcpCustomKey("test1", TestData, false);
             var keyData = key.KeyData.ReadData();
-            Assert.True(MemUtil.ArraysEqual(keyData, testData));
+            Assert.That(MemUtil.ArraysEqual(keyData, TestData), Is.True);
 
-            key = new KcpCustomKey("test2", testData, true);
+            key = new KcpCustomKey("test2", TestData, true);
             keyData = key.KeyData.ReadData();
-            Assert.True(MemUtil.ArraysEqual(keyData, expectedHash));
+            Assert.That(MemUtil.ArraysEqual(keyData, expectedHash), Is.True);
         }
     }
 }
