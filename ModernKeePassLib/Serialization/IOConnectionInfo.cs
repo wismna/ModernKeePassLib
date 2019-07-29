@@ -25,7 +25,6 @@ using System.IO;
 using System.Text;
 using System.Xml.Serialization;
 #if ModernKeePassLib
-using System.Threading.Tasks;
 using Windows.Storage;
 #endif
 
