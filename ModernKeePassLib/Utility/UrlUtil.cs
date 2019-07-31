@@ -25,10 +25,6 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
-#if ModernKeePassLib
-using Windows.Storage;
-#endif
-
 using ModernKeePassLib.Native;
 
 namespace ModernKeePassLib.Utility
@@ -44,14 +40,7 @@ namespace ModernKeePassLib.Utility
 
 		public static char LocalDirSepChar
 		{
-#if KeePassRT
-			get { return '\\'; }
-#elif ModernKeePassLib
-            //get { return PortablePath.DirectorySeparatorChar; }
-            get { return '\\'; }
-#else
 			get { return Path.DirectorySeparatorChar; }
-#endif
 		}
 
 		private static char[] g_vDirSepChars = null;
@@ -486,16 +475,7 @@ namespace ModernKeePassLib.Utility
 			}
 
 			string str;
-			try
-			{
-#if ModernKeePassLib
-                var dirT = StorageFolder.GetFolderFromPathAsync(
-                    strPath).GetResults();
-                str = dirT.Path;
-#else
-				str = Path.GetFullPath(strPath);
-#endif
-			}
+			try { str = Path.GetFullPath(strPath); }
 			catch(Exception) { Debug.Assert(false); return strPath; }
 
 			Debug.Assert((str.IndexOf("\\..\\") < 0) || NativeLib.IsUnix());
@@ -703,10 +683,11 @@ namespace ModernKeePassLib.Utility
 			string strDir;
 			if(NativeLib.IsUnix())
 				strDir = NativeMethods.GetUserRuntimeDir();
-#if KeePassUAP || ModernKeePassLib
+#if KeePassUAP
 			else strDir = Windows.Storage.ApplicationData.Current.TemporaryFolder.Path;
 #else
 			else strDir = Path.GetTempPath();
+#endif
 
 			try
 			{
@@ -714,11 +695,10 @@ namespace ModernKeePassLib.Utility
 			}
 			catch(Exception) { Debug.Assert(false); }
 
-#endif
 			return strDir;
 		}
 
-#if !ModernKeePassLib && !KeePassLibSD
+#if !KeePassLibSD
 		// Structurally mostly equivalent to UrlUtil.GetFileInfos
 		public static List<string> GetFilePaths(string strDir, string strPattern,
 			SearchOption opt)

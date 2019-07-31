@@ -27,9 +27,6 @@ using System.Xml;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using Windows.Security.Cryptography;
-using Windows.Security.Cryptography.Core;
-using Windows.Storage;
 #else
 using System.Security.Cryptography;
 #endif
@@ -68,9 +65,9 @@ namespace ModernKeePassLib.Keys
 			get { return m_pbKeyData; }
 		}
 #if ModernKeePassLib
-        public KcpKeyFile(StorageFile keyFile)
+        public KcpKeyFile(byte[] keyFile)
 		{
-			Construct(IOConnectionInfo.FromStorageFile(keyFile), false);
+			Construct(IOConnectionInfo.FromByteArray(keyFile), false);
 		}
 #else
         public KcpKeyFile(string strKeyFile)
@@ -192,7 +189,7 @@ namespace ModernKeePassLib.Keys
         /// random number generator is used).</param>
         /// <returns>Returns a <c>FileSaveResult</c> error code.</returns>
 #if ModernKeePassLib
-        public static void Create(StorageFile file, byte[] pbAdditionalEntropy)
+        public static byte[] Create(byte[] pbAdditionalEntropy)
 #else
         public static void Create(string strFilePath, byte[] pbAdditionalEntropy)
 #endif
@@ -215,7 +212,7 @@ namespace ModernKeePassLib.Keys
 			}
 
 #if ModernKeePassLib
-            CreateXmlKeyFile(file, pbFinalKey32);
+            return CreateXmlKeyFile(pbFinalKey32);
 #else
             CreateXmlKeyFile(strFilePath, pbFinalKey32);
 #endif
@@ -281,10 +278,8 @@ namespace ModernKeePassLib.Keys
 		}
 
 #if ModernKeePassLib
-        private static void CreateXmlKeyFile(StorageFile file, byte[] pbKeyData)
+        private static byte[] CreateXmlKeyFile(byte[] pbKeyData)
 		{
-			Debug.Assert(file != null);
-			if (file == null) throw new ArgumentNullException(nameof(file));
 #else
         private static void CreateXmlKeyFile(string strFile, byte[] pbKeyData)
 		{
@@ -295,7 +290,8 @@ namespace ModernKeePassLib.Keys
 			if(pbKeyData == null) throw new ArgumentNullException("pbKeyData");
 
 #if ModernKeePassLib
-			var ioc = IOConnectionInfo.FromStorageFile(file);
+            var fileContents = new byte[0];
+			var ioc = IOConnectionInfo.FromByteArray(fileContents);
 #else
 			IOConnectionInfo ioc = IOConnectionInfo.FromPath(strFile);
 #endif
@@ -323,7 +319,10 @@ namespace ModernKeePassLib.Keys
 					xw.WriteEndElement(); // </KeyFile>
 					xw.WriteEndDocument();
 				}
+#if ModernKeePassLib
+                return ((MemoryStream) s).ToArray();
+#endif
 			}
-		}
-	}
+        }
+    }
 }

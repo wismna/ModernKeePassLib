@@ -24,9 +24,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 #if ModernKeePassLib
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Storage.Streams;
 #endif
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Resources;

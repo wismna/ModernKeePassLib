@@ -24,9 +24,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Xml.Serialization;
-#if ModernKeePassLib
-using Windows.Storage;
-#endif
 
 using ModernKeePassLib.Interfaces;
 using ModernKeePassLib.Utility;
@@ -67,9 +64,9 @@ namespace ModernKeePassLib.Serialization
 	{
 		// private IOFileFormatHint m_ioHint = IOFileFormatHint.None;
 
-        public StorageFile StorageFile { get; set; }
+        public byte[] Bytes { get; private set; }
 
-		private string m_strUrl = string.Empty;
+        private string m_strUrl = string.Empty;
 		public string Path
 		{
 			get { return m_strUrl; }
@@ -118,7 +115,8 @@ namespace ModernKeePassLib.Serialization
 		}
 
 		private IOCredSaveMode m_ioCredSaveMode = IOCredSaveMode.NoSave;
-		public IOCredSaveMode CredSaveMode
+        
+        public IOCredSaveMode CredSaveMode
 		{
 			get { return m_ioCredSaveMode; }
 			set { m_ioCredSaveMode = value; }
@@ -315,16 +313,16 @@ namespace ModernKeePassLib.Serialization
 		}
 
 #if ModernKeePassLib
-        public static IOConnectionInfo FromStorageFile(StorageFile file)
-		{
-			IOConnectionInfo ioc = new IOConnectionInfo();
+        public static IOConnectionInfo FromByteArray(byte[] bytes)
+        {
+            IOConnectionInfo ioc = new IOConnectionInfo();
 
-            ioc.StorageFile = file;
-			ioc.CredSaveMode = IOCredSaveMode.NoSave;
+            ioc.Bytes = bytes;
+            ioc.CredSaveMode = IOCredSaveMode.NoSave;
 
-			return ioc;
-		}
-#else
+            return ioc;
+        }
+#endif
 		public static IOConnectionInfo FromPath(string strPath)
 		{
 			IOConnectionInfo ioc = new IOConnectionInfo();
@@ -334,16 +332,11 @@ namespace ModernKeePassLib.Serialization
 
 			return ioc;
 		}
-#endif
-		public bool CanProbablyAccess()
+
+        public bool CanProbablyAccess()
 		{
 #if ModernKeePassLib
-            if (IsLocalFile())
-            {
-                //return (FileSystem.Current.GetFileFromPathAsync(m_strUrl).Result != null);
-                var file = StorageFile.GetFileFromPathAsync(m_strUrl).GetAwaiter().GetResult();
-                return file != null;
-            }
+            if (IsLocalFile()) return Bytes != null;
 #else
 			if(IsLocalFile()) return File.Exists(m_strUrl);
 #endif

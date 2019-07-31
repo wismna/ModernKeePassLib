@@ -23,12 +23,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using Windows.Storage.AccessCache;
 #if (!ModernKeePassLib && !KeePassLibSD && !KeePassRT)
 using System.Security.AccessControl;
-#endif
-#if ModernKeePassLib
-using Windows.Storage;
 #endif
 
 using ModernKeePassLib.Cryptography;
@@ -237,7 +233,7 @@ namespace ModernKeePassLib.Serialization
 					FileSecurity sec = File.GetAccessControl(m_iocBase.Path, acs);
 					if(sec != null) pbSec = sec.GetSecurityDescriptorBinaryForm();
 #endif
-                }
+				}
 				catch(Exception) { Debug.Assert(NativeLib.IsUnix()); }
 
 				// if((long)(faBase & FileAttributes.ReadOnly) != 0)
@@ -351,13 +347,7 @@ namespace ModernKeePassLib.Serialization
 				if((chT != chB) && !TxfIsSupported(chT)) return;
 
 				m_iocTxfMidFallback = m_iocTemp;
-#if ModernKeePassLib
-                var tempFile = ApplicationData.Current.TemporaryFolder.CreateFileAsync(m_iocTemp.Path).GetAwaiter()
-                    .GetResult();
-                m_iocTemp = IOConnectionInfo.FromStorageFile(tempFile);
-#else
 				m_iocTemp = IOConnectionInfo.FromPath(strTemp);
-#endif
 
 				m_lToDelete.Add(m_iocTemp);
 			}
@@ -370,9 +360,9 @@ namespace ModernKeePassLib.Serialization
 
 			if(TxfMoveWithTx()) return true;
 
-            // Move the temporary file onto the base file's drive first,
-            // such that it cannot happen that both the base file and
-            // the temporary file are deleted/corrupted
+			// Move the temporary file onto the base file's drive first,
+			// such that it cannot happen that both the base file and
+			// the temporary file are deleted/corrupted
 #if !ModernKeePassLib
 			const uint f = (NativeMethods.MOVEFILE_COPY_ALLOWED |
 				NativeMethods.MOVEFILE_REPLACE_EXISTING);
@@ -441,10 +431,6 @@ namespace ModernKeePassLib.Serialization
 		{
 			try
 			{
-#if ModernKeePassLib
-			    ApplicationData.Current.TemporaryFolder.GetFileAsync(UrlUtil.GetTempPath()).GetAwaiter()
-			        .GetResult().DeleteAsync().GetAwaiter().GetResult();
-#else
 				// See also TxfPrepare method
 				DirectoryInfo di = new DirectoryInfo(UrlUtil.GetTempPath());
 				List<FileInfo> l = UrlUtil.GetFileInfos(di, StrTxfTempPrefix +
@@ -460,7 +446,6 @@ namespace ModernKeePassLib.Serialization
 					if((DateTime.UtcNow - fi.LastWriteTimeUtc).TotalDays > 1.0)
 						fi.Delete();
 				}
-#endif
 			}
 			catch(Exception) { Debug.Assert(false); }
 		}

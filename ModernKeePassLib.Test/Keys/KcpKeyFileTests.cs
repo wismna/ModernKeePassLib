@@ -1,9 +1,11 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using ModernKeePassLib.Keys;
 using ModernKeePassLib.Utility;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Keys
@@ -58,15 +60,19 @@ namespace ModernKeePassLib.Test.Keys
                 sw.Write(ExpectedFileEnd);
             }
 
-            var keyFile = new KcpKeyFile(_file);
+            var fileBytes = (await FileIO.ReadBufferAsync(_file)).ToArray();
+
+            var keyFile = new KcpKeyFile(fileBytes);
             var keyData = keyFile.KeyData.ReadData();
+
             Assert.That(MemUtil.ArraysEqual(keyData, expectedKeyData), Is.True);
         }
 
         [Test]
         public async Task TestCreate()
         {
-            KcpKeyFile.Create(_file, null);
+            var fileBytes = KcpKeyFile.Create(null);
+            await FileIO.WriteBytesAsync(_file, fileBytes);
             var fileContents = await FileIO.ReadTextAsync(_file);
 
             Assert.That(fileContents.Length, Is.EqualTo(185));

@@ -28,8 +28,6 @@ using System.Text;
 using System.Xml;
 #if !ModernKeePassLib && !KeePassUAP
 using System.Security.Cryptography;
-#else
-using Windows.Storage;
 #endif
 
 #if !KeePassLibSD
@@ -62,9 +60,9 @@ namespace ModernKeePassLib.Serialization
         /// <param name="fmt">Format.</param>
         /// <param name="slLogger">Status logger (optional).</param>
 #if ModernKeePassLib
-        public void Load(StorageFile file, KdbxFormat fmt, IStatusLogger slLogger)
+        public void Load(byte[] fileContents, KdbxFormat fmt, IStatusLogger slLogger)
 		{
-			IOConnectionInfo ioc = IOConnectionInfo.FromStorageFile(file);
+			IOConnectionInfo ioc = IOConnectionInfo.FromByteArray(fileContents);
 #else
         public void Load(string strFilePath, KdbxFormat fmt, IStatusLogger slLogger)
 		{

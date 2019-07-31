@@ -30,10 +30,6 @@ using System.Xml;
 using System.Security.Cryptography;
 #endif
 
-#if ModernKeePassLib
-using Windows.Storage;
-#endif
-
 using ModernKeePassLib.Collections;
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Cryptography.Cipher;
@@ -512,33 +508,11 @@ namespace ModernKeePassLib.Serialization
 
 				++iTry;
 			}
-#if ModernKeePassLib
-            while (StorageFile.GetFileFromPathAsync(strPath).GetResults() != null);
-#else
 			while(File.Exists(strPath));
-#endif
 
-#if ModernKeePassLib
-			byte[] pbData = pb.ReadData();
-            /*var file = FileSystem.Current.GetFileFromPathAsync(strPath).Result;
-			using (var stream = file.OpenAsync(FileAccess.ReadAndWrite).Result) {*/
-            var file = StorageFile.GetFileFromPathAsync(strPath).GetAwaiter().GetResult();
-            using (var stream = file.OpenAsync(FileAccessMode.ReadWrite).GetAwaiter().GetResult().AsStream())
-            {
-                stream.Write (pbData, 0, pbData.Length);
-			}
-			MemUtil.ZeroByteArray(pbData);
-#elif !KeePassLibSD
-			byte[] pbData = pb.ReadData();
-			File.WriteAllBytes(strPath, pbData);
-			MemUtil.ZeroByteArray(pbData);
-#else
-			FileStream fs = new FileStream(strPath, FileMode.Create,
-				FileAccess.Write, FileShare.None);
 			byte[] pbData = pb.ReadData();
 			try { File.WriteAllBytes(strPath, pbData); }
 			finally { if(pb.IsProtected) MemUtil.ZeroByteArray(pbData); }
-#endif
 		}
 	}
 }

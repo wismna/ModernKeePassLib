@@ -20,13 +20,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-#if !ModernKeePassLib
-using System.Drawing;
+#if ModernKeePassLib
+using SixLabors.ImageSharp;
 #else
-using Windows.UI.Xaml.Controls;
+using System.Drawing;
 #endif
 
 using ModernKeePassLib.Utility;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace ModernKeePassLib
 {
@@ -38,8 +39,8 @@ namespace ModernKeePassLib
 		private readonly PwUuid m_pwUuid;
 		private readonly byte[] m_pbImageDataPng;
 
-		private readonly Image m_imgOrg;
-		private Dictionary<long, Image> m_dImageCache = new Dictionary<long, Image>();
+		private readonly Image<Rgba32> m_imgOrg;
+		private Dictionary<long, Image<Rgba32>> m_dImageCache = new Dictionary<long, Image<Rgba32>>();
 
 		// Recommended maximum sizes, not obligatory
 		internal const int MaxWidth = 128;
@@ -56,7 +57,7 @@ namespace ModernKeePassLib
 		}
 
 		[Obsolete("Use GetImage instead.")]
-		public Image Image
+		public Image<Rgba32> Image
 		{
 #if (!KeePassLibSD && !KeePassUAP)
 			get { return GetImage(16, 16); } // Backward compatibility
@@ -96,7 +97,7 @@ namespace ModernKeePassLib
 		/// <summary>
 		/// Get the icon as an <c>Image</c> (original size).
 		/// </summary>
-		public Image GetImage()
+		public Image<Rgba32> GetImage()
 		{
 			return m_imgOrg;
 		}
@@ -107,7 +108,7 @@ namespace ModernKeePassLib
 		/// </summary>
 		/// <param name="w">Width of the returned image.</param>
 		/// <param name="h">Height of the returned image.</param>
-		public Image GetImage(int w, int h)
+		public Image<Rgba32> GetImage(int w, int h)
 		{
 			if(w < 0) { Debug.Assert(false); return m_imgOrg; }
 			if(h < 0) { Debug.Assert(false); return m_imgOrg; }
@@ -115,7 +116,7 @@ namespace ModernKeePassLib
 
 			long lID = GetID(w, h);
 
-			Image img;
+			Image<Rgba32> img;
 			if(m_dImageCache.TryGetValue(lID, out img)) return img;
 
 			img = GfxUtil.ScaleImage(m_imgOrg, w, h, ScaleTransformFlags.UIIcon);

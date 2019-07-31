@@ -33,10 +33,6 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 #endif
 
-#if ModernKeePassLib
-using Windows.Storage;
-using Windows.Storage.Streams;
-#endif
 using ModernKeePassLib.Native;
 using ModernKeePassLib.Utility;
 
@@ -600,7 +596,7 @@ namespace ModernKeePassLib.Serialization
 		private static Stream OpenReadLocal(IOConnectionInfo ioc)
 		{
 #if ModernKeePassLib
-             return ioc.StorageFile.OpenAsync(FileAccessMode.Read).GetAwaiter().GetResult().AsStream();
+             return new MemoryStream(ioc.Bytes);
 #else
             return new FileStream(ioc.Path, FileMode.Open, FileAccess.Read,
 				FileShare.Read);
@@ -639,12 +635,12 @@ namespace ModernKeePassLib.Serialization
 		private static Stream OpenWriteLocal(IOConnectionInfo ioc)
 		{
 #if ModernKeePassLib
-            return ioc.StorageFile.OpenAsync(FileAccessMode.ReadWrite).GetAwaiter().GetResult().AsStream();
+            return new MemoryStream();
 #else
 			return new FileStream(ioc.Path, FileMode.Create, FileAccess.Write,
 				FileShare.None);
 #endif
-		}
+        }
 
 		public static bool FileExists(IOConnectionInfo ioc)
 		{
@@ -658,7 +654,7 @@ namespace ModernKeePassLib.Serialization
 			RaiseIOAccessPreEvent(ioc, IOAccessType.Exists);
 
 #if ModernKeePassLib
-            return ioc.StorageFile != null;
+            return ioc.Bytes != null;
 #else
 			if(ioc.IsLocalFile()) return File.Exists(ioc.Path);
 
@@ -700,7 +696,7 @@ namespace ModernKeePassLib.Serialization
 
 #if ModernKeePassLib
             if (!ioc.IsLocalFile()) return;
-            ioc.StorageFile?.DeleteAsync().GetAwaiter().GetResult();
+            MemUtil.ZeroByteArray(ioc.Bytes);
 #else
 			if(ioc.IsLocalFile()) { File.Delete(ioc.Path); return; }
 
@@ -737,10 +733,7 @@ namespace ModernKeePassLib.Serialization
 		{
 			RaiseIOAccessPreEvent(iocFrom, iocTo, IOAccessType.Move);
 
-#if ModernKeePassLib
-            if (!iocFrom.IsLocalFile()) return;
-            iocFrom.StorageFile?.RenameAsync(iocTo.Path).GetAwaiter().GetResult();
-#else
+#if !ModernKeePassLib
 			if(iocFrom.IsLocalFile()) { File.Move(iocFrom.Path, iocTo.Path); return; }
 
 #if !KeePassLibSD

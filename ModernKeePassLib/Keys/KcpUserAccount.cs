@@ -23,12 +23,10 @@ using System.IO;
 using System.Security;
 
 #if ModernKeePassLib
-using Windows.Storage;
 using System.Security.Cryptography;
 #endif
 
 using ModernKeePassLib.Cryptography;
-using ModernKeePassLib.Native;
 using ModernKeePassLib.Resources;
 using ModernKeePassLib.Security;
 using ModernKeePassLib.Utility;
@@ -87,8 +85,8 @@ namespace ModernKeePassLib.Keys
 
 		private static string GetUserKeyFilePath(bool bCreate)
 		{
-#if ModernKeePassLib
-			string strUserDir = Windows.Storage.ApplicationData.Current.RoamingFolder.Path;
+#if KeePassUAP
+			string strUserDir = EnvironmentExt.AppDataRoamingFolderPath;
 #else
 			string strUserDir = Environment.GetFolderPath(
 				Environment.SpecialFolder.ApplicationData);
@@ -97,11 +95,8 @@ namespace ModernKeePassLib.Keys
 			strUserDir = UrlUtil.EnsureTerminatingSeparator(strUserDir, false);
 			strUserDir += PwDefs.ShortProductName;
 
-#if !ModernKeePassLib
-
 			if(bCreate && !Directory.Exists(strUserDir))
 				Directory.CreateDirectory(strUserDir);
-#endif
 
 			strUserDir = UrlUtil.EnsureTerminatingSeparator(strUserDir, false);
 			return (strUserDir + UserKeyFileName);
@@ -115,15 +110,7 @@ namespace ModernKeePassLib.Keys
 			try
 			{
 				string strFilePath = GetUserKeyFilePath(false);
-
-#if ModernKeePassLib
-                var fileStream = StorageFile.GetFileFromPathAsync(strFilePath).GetAwaiter().GetResult().OpenStreamForReadAsync().GetAwaiter().GetResult();
-                var pbProtectedKey = new byte[(int)fileStream.Length];
-                fileStream.Read(pbProtectedKey, 0, (int)fileStream.Length);
-                fileStream.Dispose();
-#else
 				byte[] pbProtectedKey = File.ReadAllBytes(strFilePath);
-#endif
 
 				pbKey = CryptoUtil.UnprotectData(pbProtectedKey, m_pbEntropy,
 					DataProtectionScope.CurrentUser);
@@ -148,13 +135,8 @@ namespace ModernKeePassLib.Keys
 			byte[] pbRandomKey = CryptoRandom.Instance.GetRandomBytes(64);
 			byte[] pbProtectedKey = CryptoUtil.ProtectData(pbRandomKey,
 				m_pbEntropy, DataProtectionScope.CurrentUser);
-#if ModernKeePassLib
-            var fileStream = StorageFile.GetFileFromPathAsync(strFilePath).GetAwaiter().GetResult().OpenStreamForWriteAsync().GetAwaiter().GetResult();
-            fileStream.Write(pbProtectedKey, 0, (int)fileStream.Length);
-            fileStream.Dispose();
-#else
+
 			File.WriteAllBytes(strFilePath, pbProtectedKey);
-#endif
 
 			byte[] pbKey = LoadUserKey(true);
 			Debug.Assert(MemUtil.ArraysEqual(pbKey, pbRandomKey));
