@@ -15,7 +15,7 @@ namespace ModernKeePassLib.Test.Keys
         [Test]
         public void TestConstruct()
         {
-            var expectedHash = new byte[32]
+            var expectedHash = new byte[]
             {
                 0xAF, 0x55, 0x70, 0xF5, 0xA1, 0x81, 0x0B, 0x7A,
                 0xF7, 0x8C, 0xAF, 0x4B, 0xC7, 0x0A, 0x66, 0x0F,
