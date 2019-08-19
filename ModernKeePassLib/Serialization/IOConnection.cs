@@ -635,7 +635,7 @@ namespace ModernKeePassLib.Serialization
 		private static Stream OpenWriteLocal(IOConnectionInfo ioc)
 		{
 #if ModernKeePassLib
-            return new MemoryStream();
+            return new MemoryStream(ioc.Bytes);
 #else
 			return new FileStream(ioc.Path, FileMode.Create, FileAccess.Write,
 				FileShare.None);

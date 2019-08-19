@@ -225,9 +225,7 @@ namespace ModernKeePassLib.Serialization
 					try { if(bEfsEncrypted) File.Decrypt(m_iocBase.Path); } // For TxF
 					catch(Exception) { Debug.Assert(false); }
 #endif
-#if !ModernKeePassLib
 					otCreation = File.GetCreationTimeUtc(m_iocBase.Path);
-#endif
 #if !ModernKeePassLib
 					// May throw with Mono
 					FileSecurity sec = File.GetAccessControl(m_iocBase.Path, acs);
@@ -256,9 +254,7 @@ namespace ModernKeePassLib.Serialization
 #if !ModernKeePassLib
 				if(otCreation.HasValue && (otCreation.Value.Year >= 1971))
 					File.SetCreationTimeUtc(m_iocBase.Path, otCreation.Value);
-#endif
 
-#if !ModernKeePassLib
 				if(bEfsEncrypted)
 				{
 					try { File.Encrypt(m_iocBase.Path); }
