@@ -64,7 +64,7 @@ namespace ModernKeePassLib.Serialization
 	{
 		// private IOFileFormatHint m_ioHint = IOFileFormatHint.None;
 
-        public byte[] Bytes { get; private set; }
+        public byte[] Bytes { get; set; }
 
         private string m_strUrl = string.Empty;
 		public string Path

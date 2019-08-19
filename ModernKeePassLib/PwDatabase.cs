@@ -679,7 +679,10 @@ namespace ModernKeePassLib
 					using(Stream s = ft.OpenWrite())
 					{
 						kdbx.Save(s, null, KdbxFormat.Default, slLogger);
-					}
+#if ModernKeePassLib
+                        IOConnectionInfo.Bytes = ((MemoryStream)s).ToArray();
+#endif
+                    }
 
 					ft.CommitWrite();
 				}
