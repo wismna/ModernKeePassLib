@@ -1,6 +1,6 @@
 /*
   KeePass Password Safe - The Open-Source Password Manager
-  Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
+  Copyright (C) 2003-2020 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -179,15 +179,15 @@ namespace ModernKeePassLib.Keys
 			return null;
 		}
 
-        /// <summary>
-        /// Create a new, random key-file.
-        /// </summary>
-        /// <param name="strFilePath">Path where the key-file should be saved to.
-        /// If the file exists already, it will be overwritten.</param>
-        /// <param name="pbAdditionalEntropy">Additional entropy used to generate
-        /// the random key. May be <c>null</c> (in this case only the KeePass-internal
-        /// random number generator is used).</param>
-        /// <returns>Returns a <c>FileSaveResult</c> error code.</returns>
+		/// <summary>
+		/// Create a new, random key-file.
+		/// </summary>
+		/// <param name="strFilePath">Path where the key-file should be saved to.
+		/// If the file exists already, it will be overwritten.</param>
+		/// <param name="pbAdditionalEntropy">Additional entropy used to generate
+		/// the random key. May be <c>null</c> (in this case only the KeePass-internal
+		/// random number generator is used).</param>
+		/// <returns>Returns a <c>FileSaveResult</c> error code.</returns>
 #if ModernKeePassLib
         public static byte[] Create(byte[] pbAdditionalEntropy)
 #else
@@ -281,7 +281,7 @@ namespace ModernKeePassLib.Keys
         private static byte[] CreateXmlKeyFile(byte[] pbKeyData)
 		{
 #else
-        private static void CreateXmlKeyFile(string strFile, byte[] pbKeyData)
+		private static void CreateXmlKeyFile(string strFile, byte[] pbKeyData)
 		{
 			Debug.Assert(strFile != null);
 			if(strFile == null) throw new ArgumentNullException("strFile");
@@ -323,6 +323,6 @@ namespace ModernKeePassLib.Keys
                 return ((MemoryStream) s).ToArray();
 #endif
 			}
-        }
-    }
+		}
+	}
 }

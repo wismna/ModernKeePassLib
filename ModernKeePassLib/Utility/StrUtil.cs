@@ -1,6 +1,6 @@
 ﻿/*
   KeePass Password Safe - The Open-Source Password Manager
-  Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
+  Copyright (C) 2003-2020 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -399,12 +399,6 @@ namespace ModernKeePassLib.Utility
 		public static void SplitCommandLine(string strCmdLine, out string strApp,
 			out string strArgs)
 		{
-			SplitCommandLine(strCmdLine, out strApp, out strArgs, true);
-		}
-
-		internal static void SplitCommandLine(string strCmdLine, out string strApp,
-			out string strArgs, bool bDecodeAppToPath)
-		{
 			if(strCmdLine == null) { Debug.Assert(false); throw new ArgumentNullException("strCmdLine"); }
 
 			string str = strCmdLine.Trim();
@@ -435,7 +429,7 @@ namespace ModernKeePassLib.Utility
 			if(strApp == null) { Debug.Assert(false); strApp = string.Empty; }
 			if(strArgs == null) strArgs = string.Empty;
 
-			if(bDecodeAppToPath) strApp = NativeLib.DecodeArgsToPath(strApp);
+			strApp = NativeLib.DecodeArgsToData(strApp);
 		}
 
 		// /// <summary>
@@ -538,7 +532,7 @@ namespace ModernKeePassLib.Utility
 			if(!string.IsNullOrEmpty(excp.StackTrace))
 				strText += excp.StackTrace + MessageService.NewLine;
 #if !KeePassLibSD
-#if !ModernKeePassLib && !KeePassRT
+#if !ModernKeePassLib
 			if(excp.TargetSite != null)
 				strText += excp.TargetSite.ToString() + MessageService.NewLine;
 #endif
@@ -564,7 +558,7 @@ namespace ModernKeePassLib.Utility
 				if(!string.IsNullOrEmpty(excp.InnerException.StackTrace))
 					strText += excp.InnerException.StackTrace + MessageService.NewLine;
 #if !KeePassLibSD
-#if !ModernKeePassLib && !KeePassRT
+#if !ModernKeePassLib
 				if(excp.InnerException.TargetSite != null)
 					strText += excp.InnerException.TargetSite.ToString();
 #endif
@@ -966,10 +960,10 @@ namespace ModernKeePassLib.Utility
 
 			for(char ch = 'A'; ch <= 'Z'; ++ch)
 			{
-				string strEnhAcc = @"(&" + ch.ToString() + @")";
+				string strEnhAcc = @"(&" + ch.ToString() + ")";
 				if(str.IndexOf(strEnhAcc) >= 0)
 				{
-					str = str.Replace(@" " + strEnhAcc, string.Empty);
+					str = str.Replace(" " + strEnhAcc, string.Empty);
 					str = str.Replace(strEnhAcc, string.Empty);
 				}
 			}
@@ -1382,7 +1376,7 @@ namespace ModernKeePassLib.Utility
 				byte[] pbEnc = CryptoUtil.ProtectData(pbPlain, m_pbOptEnt,
 					DataProtectionScope.CurrentUser);
 
-#if (!ModernKeePassLib && !KeePassLibSD && !KeePassRT)
+#if (!ModernKeePassLib && !KeePassLibSD)
 				return Convert.ToBase64String(pbEnc, Base64FormattingOptions.None);
 #else
 				return Convert.ToBase64String(pbEnc);
@@ -1495,7 +1489,7 @@ namespace ModernKeePassLib.Utility
 			Array.Reverse(pb);
 			for(int i = 0; i < pb.Length; ++i) pb[i] = (byte)(pb[i] ^ 0x65);
 
-#if (!ModernKeePassLib && !KeePassLibSD && !KeePassRT)
+#if (!ModernKeePassLib && !KeePassLibSD)
 			return Convert.ToBase64String(pb, Base64FormattingOptions.None);
 #else
 			return Convert.ToBase64String(pb);
@@ -1655,7 +1649,7 @@ namespace ModernKeePassLib.Utility
 
 			if(strMediaType == null) strMediaType = "application/octet-stream";
 
-#if (!ModernKeePassLib && !KeePassLibSD && !KeePassRT)
+#if (!ModernKeePassLib && !KeePassLibSD)
 			return ("data:" + strMediaType + ";base64," + Convert.ToBase64String(
 				pbData, Base64FormattingOptions.None));
 #else

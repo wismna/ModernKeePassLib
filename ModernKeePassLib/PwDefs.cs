@@ -1,6 +1,6 @@
 ﻿/*
   KeePass Password Safe - The Open-Source Password Manager
-  Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
+  Copyright (C) 2003-2020 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -234,8 +234,32 @@ namespace ModernKeePassLib
 			if(strFileVersion == null) { Debug.Assert(false); return string.Empty; }
 
 			if(strFileVersion == "2.39") return "2.39 / 2.39.1";
+			if(strFileVersion == "2.42") return "2.42 / 2.42.1";
 
 			return strFileVersion;
+		}
+
+		internal static PwIcon GroupIconToEntryIcon(PwIcon i)
+		{
+			PwIcon r = i; // Inherit by default
+
+			switch(i)
+			{
+				case PwIcon.Folder:
+				case PwIcon.FolderOpen:
+				case PwIcon.FolderPackage:
+					Debug.Assert((new PwEntry(false, false)).IconId == PwIcon.Key);
+					r = PwIcon.Key;
+					break;
+
+				case PwIcon.EMailBox:
+					r = PwIcon.EMail;
+					break;
+
+				default: break;
+			}
+
+			return r;
 		}
 	}
 

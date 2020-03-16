@@ -1,6 +1,6 @@
 /*
   KeePass Password Safe - The Open-Source Password Manager
-  Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
+  Copyright (C) 2003-2020 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -53,18 +53,18 @@ namespace ModernKeePassLib.Serialization
 	/// </summary>
 	public sealed partial class KdbxFile
 	{
-        /// <summary>
-        /// Load a KDBX file.
-        /// </summary>
-        /// <param name="strFilePath">File to load.</param>
-        /// <param name="fmt">Format.</param>
-        /// <param name="slLogger">Status logger (optional).</param>
+		/// <summary>
+		/// Load a KDBX file.
+		/// </summary>
+		/// <param name="strFilePath">File to load.</param>
+		/// <param name="fmt">Format.</param>
+		/// <param name="slLogger">Status logger (optional).</param>
 #if ModernKeePassLib
         public void Load(byte[] fileContents, KdbxFormat fmt, IStatusLogger slLogger)
 		{
 			IOConnectionInfo ioc = IOConnectionInfo.FromByteArray(fileContents);
 #else
-        public void Load(string strFilePath, KdbxFormat fmt, IStatusLogger slLogger)
+		public void Load(string strFilePath, KdbxFormat fmt, IStatusLogger slLogger)
 		{
 			IOConnectionInfo ioc = IOConnectionInfo.FromPath(strFilePath);
 #endif

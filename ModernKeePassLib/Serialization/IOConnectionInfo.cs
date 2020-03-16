@@ -1,6 +1,6 @@
 /*
   KeePass Password Safe - The Open-Source Password Manager
-  Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
+  Copyright (C) 2003-2020 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -63,10 +63,9 @@ namespace ModernKeePassLib.Serialization
 	public sealed class IOConnectionInfo : IDeepCloneable<IOConnectionInfo>
 	{
 		// private IOFileFormatHint m_ioHint = IOFileFormatHint.None;
-
         public byte[] Bytes { get; set; }
 
-        private string m_strUrl = string.Empty;
+		private string m_strUrl = string.Empty;
 		public string Path
 		{
 			get { return m_strUrl; }
@@ -115,8 +114,7 @@ namespace ModernKeePassLib.Serialization
 		}
 
 		private IOCredSaveMode m_ioCredSaveMode = IOCredSaveMode.NoSave;
-        
-        public IOCredSaveMode CredSaveMode
+		public IOCredSaveMode CredSaveMode
 		{
 			get { return m_ioCredSaveMode; }
 			set { m_ioCredSaveMode = value; }
@@ -333,7 +331,7 @@ namespace ModernKeePassLib.Serialization
 			return ioc;
 		}
 
-        public bool CanProbablyAccess()
+		public bool CanProbablyAccess()
 		{
 #if ModernKeePassLib
             if (IsLocalFile()) return Bytes != null;

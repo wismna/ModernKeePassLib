@@ -28,6 +28,16 @@ namespace ModernKeePassLib.Native
             if (!string.IsNullOrEmpty(strApp)) return strApp;
             return string.Empty;
         }
+
+		internal static string EncodeDataToArgs(string v)
+		{
+			throw new NotImplementedException();
+		}
+
+        public static string DecodeArgsToData(string strApp)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 	internal static class NativeMethods

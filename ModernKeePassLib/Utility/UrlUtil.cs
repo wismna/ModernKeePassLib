@@ -1,6 +1,6 @@
 /*
   KeePass Password Safe - The Open-Source Password Manager
-  Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
+  Copyright (C) 2003-2020 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -275,21 +275,30 @@ namespace ModernKeePassLib.Utility
 
 		public static string FileUrlToPath(string strUrl)
 		{
-			Debug.Assert(strUrl != null);
-			if(strUrl == null) throw new ArgumentNullException("strUrl");
+			if(strUrl == null) { Debug.Assert(false); throw new ArgumentNullException("strUrl"); }
+			if(strUrl.Length == 0) { Debug.Assert(false); return string.Empty; }
 
-			string str = strUrl;
-			if(str.StartsWith("file:///", StrUtil.CaseIgnoreCmp))
-				str = str.Substring(8, str.Length - 8);
+			if(!strUrl.StartsWith(Uri.UriSchemeFile + ":", StrUtil.CaseIgnoreCmp))
+			{
+				Debug.Assert(false);
+				return strUrl;
+			}
 
-			str = str.Replace('/', UrlUtil.LocalDirSepChar);
+			try
+			{
+				Uri uri = new Uri(strUrl);
+				string str = uri.LocalPath;
+				if(!string.IsNullOrEmpty(str)) return str;
+			}
+			catch(Exception) { Debug.Assert(false); }
 
-			return str;
+			Debug.Assert(false);
+			return strUrl;
 		}
 
 		public static bool UnhideFile(string strFile)
 		{
-#if (ModernKeePassLib || KeePassLibSD || KeePassRT)
+#if (ModernKeePassLib || KeePassLibSD)
 			return false;
 #else
 			if(strFile == null) throw new ArgumentNullException("strFile");
@@ -309,7 +318,7 @@ namespace ModernKeePassLib.Utility
 
 		public static bool HideFile(string strFile, bool bHide)
 		{
-#if (ModernKeePassLib || KeePassLibSD || KeePassRT)
+#if (ModernKeePassLib || KeePassLibSD)
 			return false;
 #else
 			if(strFile == null) throw new ArgumentNullException("strFile");
@@ -606,7 +615,7 @@ namespace ModernKeePassLib.Utility
 		}
 
 		/// <summary>
-		/// Get the host component of an URL.
+		/// Get the host component of a URL.
 		/// This method is faster and more fault-tolerant than creating
 		/// an <code>Uri</code> object and querying its <code>Host</code>
 		/// property.
@@ -776,21 +785,32 @@ namespace ModernKeePassLib.Utility
 		/// Expand shell variables in a string.
 		/// <paramref name="vParams" />[0] is the value of <c>%1</c>, etc.
 		/// </summary>
-		public static string ExpandShellVariables(string strText, string[] vParams)
+		internal static string ExpandShellVariables(string strText, string[] vParams,
+			bool bEncParamsToArgs)
 		{
 			if(strText == null) { Debug.Assert(false); return string.Empty; }
-			if(vParams == null) { Debug.Assert(false); vParams = new string[0]; }
+
+			string[] v = vParams;
+			if(v == null) { Debug.Assert(false); v = new string[0]; }
+			if(bEncParamsToArgs)
+			{
+				for(int i = 0; i < v.Length; ++i)
+					v[i] = NativeLib.EncodeDataToArgs(v[i] ?? string.Empty);
+			}
 
 			string str = strText;
 			NumberFormatInfo nfi = NumberFormatInfo.InvariantInfo;
+
+			string strPctPlh = Guid.NewGuid().ToString();
+			str = str.Replace("%%", strPctPlh);
 
 			for(int i = 0; i <= 9; ++i)
 			{
 				string strPlh = "%" + i.ToString(nfi);
 
 				string strValue = string.Empty;
-				if((i > 0) && ((i - 1) < vParams.Length))
-					strValue = (vParams[i - 1] ?? string.Empty);
+				if((i > 0) && ((i - 1) < v.Length))
+					strValue = (v[i - 1] ?? string.Empty);
 
 				str = str.Replace(strPlh, strValue);
 
@@ -806,7 +826,7 @@ namespace ModernKeePassLib.Utility
 			if(str.IndexOf("%*") >= 0)
 			{
 				StringBuilder sb = new StringBuilder();
-				foreach(string strValue in vParams)
+				foreach(string strValue in v)
 				{
 					if(!string.IsNullOrEmpty(strValue))
 					{
@@ -818,6 +838,7 @@ namespace ModernKeePassLib.Utility
 				str = str.Replace("%*", sb.ToString());
 			}
 
+			str = str.Replace(strPctPlh, "%");
 			return str;
 		}
 
@@ -845,6 +866,22 @@ namespace ModernKeePassLib.Utility
 				return "File.dat";
 			}
 			return str;
+		}
+
+		internal static string GetCanonicalUri(string strUri)
+		{
+			if(string.IsNullOrEmpty(strUri)) { Debug.Assert(false); return strUri; }
+
+			try
+			{
+				Uri uri = new Uri(strUri);
+
+				if(uri.IsAbsoluteUri) return uri.AbsoluteUri;
+				else { Debug.Assert(false); }
+			}
+			catch(Exception) { Debug.Assert(false); }
+
+			return strUri;
 		}
 	}
 }

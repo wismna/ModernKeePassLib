@@ -1,6 +1,6 @@
 ﻿/*
   KeePass Password Safe - The Open-Source Password Manager
-  Copyright (C) 2003-2019 Dominik Reichl <dominik.reichl@t-online.de>
+  Copyright (C) 2003-2020 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-#if (!ModernKeePassLib && !KeePassLibSD && !KeePassRT)
+#if (!ModernKeePassLib && !KeePassUAP)
 using System.Security.AccessControl;
 #endif
 
@@ -45,9 +45,9 @@ namespace ModernKeePassLib.Serialization
 		private bool m_bMadeUnhidden = false;
 		private List<IOConnectionInfo> m_lToDelete = new List<IOConnectionInfo>();
 
-		private const string StrTempSuffix = ".tmp";
+		internal const string StrTempSuffix = ".tmp";
 		private static readonly string StrTxfTempPrefix = PwDefs.ShortProductName + "_TxF_";
-		private const string StrTxfTempSuffix = ".tmp";
+		internal const string StrTxfTempSuffix = ".tmp";
 
 		private static Dictionary<string, bool> g_dEnabled =
 			new Dictionary<string, bool>(StrUtil.CaseIgnoreComparer);
@@ -212,6 +212,7 @@ namespace ModernKeePassLib.Serialization
 			byte[] pbSec = null;
 
 			DateTime? otCreation = null;
+			SimpleStat sStat = null;
 
 			bool bBaseExists = IOConnection.FileExists(m_iocBase);
 			if(bBaseExists && m_iocBase.IsLocalFile())
@@ -226,6 +227,7 @@ namespace ModernKeePassLib.Serialization
 					catch(Exception) { Debug.Assert(false); }
 #endif
 					otCreation = File.GetCreationTimeUtc(m_iocBase.Path);
+					sStat = SimpleStat.Get(m_iocBase.Path);
 #if !ModernKeePassLib
 					// May throw with Mono
 					FileSecurity sec = File.GetAccessControl(m_iocBase.Path, acs);
@@ -254,6 +256,8 @@ namespace ModernKeePassLib.Serialization
 #if !ModernKeePassLib
 				if(otCreation.HasValue && (otCreation.Value.Year >= 1971))
 					File.SetCreationTimeUtc(m_iocBase.Path, otCreation.Value);
+
+				if(sStat != null) SimpleStat.Set(m_iocBase.Path, sStat);
 
 				if(bEfsEncrypted)
 				{
@@ -328,7 +332,7 @@ namespace ModernKeePassLib.Serialization
 			{
 				if(NativeLib.IsUnix()) return;
 				if(!m_iocBase.IsLocalFile()) return;
-				if(IsOneDriveWorkaroundRequired()) return;
+				if(TxfIsUnusable()) return;
 
 				string strID = StrUtil.AlphaNumericOnly(Convert.ToBase64String(
 					CryptoRandom.Instance.GetRandomBytes(16)));
@@ -420,45 +424,34 @@ namespace ModernKeePassLib.Serialization
 				}
 			}
 #endif
+
 			return false;
 		}
 
-		internal static void ClearOld()
-		{
-			try
-			{
-				// See also TxfPrepare method
-				DirectoryInfo di = new DirectoryInfo(UrlUtil.GetTempPath());
-				List<FileInfo> l = UrlUtil.GetFileInfos(di, StrTxfTempPrefix +
-					"*" + StrTxfTempSuffix, SearchOption.TopDirectoryOnly);
-
-				foreach(FileInfo fi in l)
-				{
-					if(fi == null) { Debug.Assert(false); continue; }
-					if(!fi.Name.StartsWith(StrTxfTempPrefix, StrUtil.CaseIgnoreCmp) ||
-						!fi.Name.EndsWith(StrTxfTempSuffix, StrUtil.CaseIgnoreCmp))
-						continue;
-
-					if((DateTime.UtcNow - fi.LastWriteTimeUtc).TotalDays > 1.0)
-						fi.Delete();
-				}
-			}
-			catch(Exception) { Debug.Assert(false); }
-		}
-
-		// https://sourceforge.net/p/keepass/discussion/329220/thread/672ffecc65/
-		// https://sourceforge.net/p/keepass/discussion/329221/thread/514786c23a/
-		private bool IsOneDriveWorkaroundRequired()
+		private bool TxfIsUnusable()
 		{
 #if !ModernKeePassLib
-			if(NativeLib.IsUnix()) return false;
-
 			try
 			{
 				string strReleaseId = (Registry.GetValue(
 					"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
 					"ReleaseId", string.Empty) as string);
+
+				// Due to a bug in Microsoft's 'cldflt.sys' driver, a TxF transaction
+				// results in a Blue Screen of Death on Windows 10 1903/1909;
+				// https://www.windowslatest.com/2019/10/20/windows-10-update-issues-bsod-broken-apps-and-defender-atp/
+				// https://sourceforge.net/p/keepass/discussion/329221/thread/924b94ea48/
+				// This bug is fixed by the Windows update 4530684;
+				// https://support.microsoft.com/en-us/help/4530684/windows-10-update-kb4530684
+				// if(strReleaseId == "1903") return true;
+				// if(strReleaseId == "1909") return true;
+
 				if(strReleaseId != "1809") return false;
+
+				// On Windows 10 1809, OneDrive crashes if the file is
+				// in a OneDrive folder;
+				// https://sourceforge.net/p/keepass/discussion/329220/thread/672ffecc65/
+				// https://sourceforge.net/p/keepass/discussion/329221/thread/514786c23a/
 
 				string strFile = m_iocBase.Path;
 
@@ -528,6 +521,29 @@ namespace ModernKeePassLib.Serialization
 			catch(Exception) { Debug.Assert(false); }
 #endif
 			return false;
+		}
+
+		internal static void ClearOld()
+		{
+			try
+			{
+				// See also TxfPrepare method
+				DirectoryInfo di = new DirectoryInfo(UrlUtil.GetTempPath());
+				List<FileInfo> l = UrlUtil.GetFileInfos(di, StrTxfTempPrefix +
+					"*" + StrTxfTempSuffix, SearchOption.TopDirectoryOnly);
+
+				foreach(FileInfo fi in l)
+				{
+					if(fi == null) { Debug.Assert(false); continue; }
+					if(!fi.Name.StartsWith(StrTxfTempPrefix, StrUtil.CaseIgnoreCmp) ||
+						!fi.Name.EndsWith(StrTxfTempSuffix, StrUtil.CaseIgnoreCmp))
+						continue;
+
+					if((DateTime.UtcNow - fi.LastWriteTimeUtc).TotalDays > 1.0)
+						fi.Delete();
+				}
+			}
+			catch(Exception) { Debug.Assert(false); }
 		}
 	}
 }
