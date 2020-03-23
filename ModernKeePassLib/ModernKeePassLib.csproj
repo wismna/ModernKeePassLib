@@ -11,6 +11,7 @@
     <Copyright>Copyright © 2018 Geoffroy Bonneville</Copyright>
     <PackageTags>KeePass KeePassLib Portable PCL NetStandard</PackageTags>
     <PackageLicenseExpression>https://www.gnu.org/licenses/gpl-3.0.en.html</PackageLicenseExpression>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
