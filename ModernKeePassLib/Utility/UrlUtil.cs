@@ -493,16 +493,16 @@ namespace ModernKeePassLib.Utility
 			}
 
 			string str;
+#if ModernKeePassLib
 			try
 			{
-#if ModernKeePassLib
                 var dirT = StorageFolder.GetFolderFromPathAsync(
                     strPath).GetResults();
                 str = dirT.Path;
+			}
 #else
 			try { str = Path.GetFullPath(strPath); }
 #endif
-			}
 			catch(Exception) { Debug.Assert(false); return strPath; }
 
 			Debug.Assert((str.IndexOf("\\..\\") < 0) || NativeLib.IsUnix());
