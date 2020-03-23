@@ -174,7 +174,7 @@ namespace ModernKeePassLib.Translation
 			return new Dictionary<string, string>();
 		}
 
-#if (!KeePassLibSD && !KeePassUAP !&&ModernKeePassLib)
+#if (!KeePassLibSD && !KeePassUAP && !ModernKeePassLib)
 		public void ApplyTo(Form form)
 		{
 			if(form == null) throw new ArgumentNullException("form");

@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.2</TargetFramework>
+    <Description>Portable KeePass Password Management Library that targets .Net Standard and WinRT. Allows reading, editing and writing to KeePass 2.x databases.</Description>
+    <Version>2.44.1</Version>
+    <Authors>Geoffroy Bonneville</Authors>
+    <Company>wismna</Company>
+    <PackageProjectUrl>https://github.com/wismna/ModernKeePass</PackageProjectUrl>
+    <PackageReleaseNotes>Implementation of KeePass library version 2.44</PackageReleaseNotes>
+    <Copyright>Copyright © 2018 Geoffroy Bonneville</Copyright>
+    <PackageTags>KeePass KeePassLib Portable PCL NetStandard</PackageTags>
+    <PackageLicenseExpression>https://www.gnu.org/licenses/gpl-3.0.en.html</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;ModernKeePassLib</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Native\ClipboardU.cs" />
+    <Compile Remove="Native\NativeLib.cs" />
+    <Compile Remove="Native\NativeMethods.cs" />
+    <Compile Remove="Native\NativeMethods.Unix.cs" />
+    <Compile Remove="Native\SimpleStat.cs" />
+    <Compile Remove="Translation\KPControlCustomization.cs" />
+    <Compile Remove="Translation\KPFormCustomization.cs" />
+    <Compile Remove="Translation\KPStringTable.cs" />
+    <Compile Remove="Translation\KPStringTableItem.cs" />
+    <Compile Remove="Translation\KPTranslation.cs" />
+    <Compile Remove="Translation\KPTranslationProperties.cs" />
+    <Compile Remove="Utility\GfxUtil.cs" />
+    <Compile Remove="Utility\MonoWorkarounds.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Native\ClipboardU.cs" />
+    <Content Include="Native\NativeLib.cs" />
+    <Content Include="Native\NativeMethods.cs" />
+    <Content Include="Native\NativeMethods.Unix.cs" />
+    <Content Include="Native\SimpleStat.cs" />
+    <Content Include="Translation\KPControlCustomization.cs" />
+    <Content Include="Translation\KPFormCustomization.cs" />
+    <Content Include="Translation\KPStringTable.cs" />
+    <Content Include="Translation\KPStringTableItem.cs" />
+    <Content Include="Translation\KPTranslation.cs" />
+    <Content Include="Translation\KPTranslationProperties.cs" />
+    <Content Include="Utility\GfxUtil.cs" />
+    <Content Include="Utility\MonoWorkarounds.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.8.5" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0005" />
+    <PackageReference Include="Splat" Version="3.0.0" />
+    <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.3.0" />
+    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Windows">
+      <HintPath>Libs\Windows.winmd</HintPath>
+      <IsWinMDFile>true</IsWinMDFile>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ModernKeePassLib\ModernKeePass.Lib.csproj" />
+    <ProjectReference Include="..\ModernKeePassLib\ModernKeePassLib.csproj" />
   </ItemGroup>
 
   <ItemGroup>
