@@ -23,12 +23,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-
-#if !KeePassUAP
-using System.Drawing;
+#if ModernKeePassLib
+using ModernKeePassLib.Cryptography.Hash;
+using Windows.Security.Cryptography;
+#else
 using System.Security.Cryptography;
-#endif
-#if !ModernKeePassLib
 using System.Windows.Forms;
 #endif
 
@@ -190,7 +189,7 @@ namespace ModernKeePassLib.Cryptography
 			fI32(Environment.TickCount);
 			fI64(DateTime.UtcNow.ToBinary());
 
-#if !KeePassLibSD && !ModernKeePassLib
+#if (!ModernKeePassLib && !KeePassLibSD)
 			// In try-catch for systems without GUI;
 			// https://sourceforge.net/p/keepass/discussion/329221/thread/20335b73/
 			try
@@ -207,20 +206,21 @@ namespace ModernKeePassLib.Cryptography
 				fI32((int)NativeLib.GetPlatformID());
 #if KeePassUAP
 				fStr(EnvironmentExt.OSVersion.VersionString);
-#else
+#elif !ModernKeePassLib
 				fStr(Environment.OSVersion.VersionString);
 #endif
 
 				fI32(Environment.ProcessorCount);
 
-#if !KeePassUAP
+#if !ModernKeePassLib && !KeePassUAP
 				fStr(Environment.CommandLine);
 				fI64(Environment.WorkingSet);
 #endif
 			}
 			catch(Exception) { Debug.Assert(false); }
 
-			try
+#if !ModernKeePassLib
+            try
 			{
 				foreach(DictionaryEntry de in Environment.GetEnvironmentVariables())
 				{
@@ -229,12 +229,13 @@ namespace ModernKeePassLib.Cryptography
 				}
 			}
 			catch(Exception) { Debug.Assert(false); }
+#endif
 
 			try
 			{
 #if KeePassUAP
-				f(DiagnosticsExt.GetProcessEntropy(), true);
-#elif !KeePassLibSD
+                f(DiagnosticsExt.GetProcessEntropy(), true);
+#elif !KeePassLibSD && !ModernKeePassLib
 				using(Process p = Process.GetCurrentProcess())
 				{
 					fI64(p.Handle.ToInt64());
@@ -280,6 +281,7 @@ namespace ModernKeePassLib.Cryptography
 		private byte[] GetCspRandom()
 		{
 			byte[] pb = new byte[32];
+
 
 			try { m_rng.GetBytes(pb); }
 			catch(Exception)

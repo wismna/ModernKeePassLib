@@ -30,13 +30,12 @@ using System.Drawing;
 
 using ModernKeePassLib;
 using ModernKeePassLib.Collections;
+using ModernKeePassLib.Cryptography;
+using ModernKeePassLib.Cryptography.Cipher;
 using ModernKeePassLib.Interfaces;
 using ModernKeePassLib.Resources;
 using ModernKeePassLib.Security;
 using ModernKeePassLib.Utility;
-
-using ModernKeePassLib.Cryptography;
-using ModernKeePassLib.Cryptography.Cipher;
 
 namespace ModernKeePassLib.Serialization
 {
@@ -758,13 +757,21 @@ namespace ModernKeePassLib.Serialization
 			}
 
 			m_bReadNextNode = false; // ReadElementString skips end tag
+#if ModernKeePassLib
+			return xr.ReadElementContentAsString();
+#else
 			return xr.ReadElementString();
+#endif
 		}
 
 		private string ReadStringRaw(XmlReader xr)
 		{
 			m_bReadNextNode = false; // ReadElementString skips end tag
+#if ModernKeePassLib
+			return xr.ReadElementContentAsString();
+#else
 			return xr.ReadElementString();
+#endif
 		}
 
 		private byte[] ReadBase64(XmlReader xr, bool bRaw)

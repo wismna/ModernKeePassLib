@@ -21,10 +21,6 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-#if !KeePassUAP
-using System.Security.Cryptography;
-#endif
-
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Cryptography.Cipher;
 using ModernKeePassLib.Native;

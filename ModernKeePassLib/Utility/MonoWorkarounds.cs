@@ -340,7 +340,7 @@ namespace ModernKeePassLib.Utility
 			if(!MonoWorkarounds.IsRequired()) return;
 			if(f == null) { Debug.Assert(false); return; }
 
-#if (!KeePassLibSD && !KeePassRT)
+#if !KeePassLibSD
 			f.HandleCreated += MonoWorkarounds.OnFormHandleCreated;
 			SetWmClass(f);
 
@@ -353,14 +353,14 @@ namespace ModernKeePassLib.Utility
 			if(!MonoWorkarounds.IsRequired()) return;
 			if(f == null) { Debug.Assert(false); return; }
 
-#if (!KeePassLibSD && !KeePassRT)
+#if !KeePassLibSD
 			f.HandleCreated -= MonoWorkarounds.OnFormHandleCreated;
 
 			ApplyToControlsRec(f.Controls, f, MonoWorkarounds.ReleaseControl);
 #endif
 		}
 
-#if (!KeePassLibSD && !KeePassRT)
+#if !KeePassLibSD
 		private delegate void MwaControlHandler(Control c, Form fContext);
 
 		private static void ApplyToControlsRec(Control.ControlCollection cc,

@@ -29,7 +29,7 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
         [Test]
         public void TestEncryptStream()
         {
-            var a = CryptoUtil.CreateAes();
+            /*var a = CryptoUtil.CreateAes();
             if (a.BlockSize != 128) // AES block size
             {
                 //Debug.Assert(false);
@@ -44,7 +44,20 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
 
             iCrypt.TransformBlock(_pbTestData, 0, 16, _pbTestData, 0);
 
-            Assert.That(MemUtil.ArraysEqual(_pbTestData, _pbReferenceCt), Is.True);
+            Assert.That(MemUtil.ArraysEqual(_pbTestData, _pbReferenceCt), Is.True);*/
+
+            using var outStream = new MemoryStream();
+            var aes = new StandardAesEngine();
+
+            using var inStream = aes.EncryptStream(outStream, _pbTestKey, _pbIv);
+            new BinaryWriter(inStream, Encoding.UTF8).Write(_pbTestData);
+
+            //Assert.That(outStream.Position, Is.EqualTo(16));
+
+            //outStream.Position = 0;
+            var outBytes = new BinaryReaderEx(outStream, Encoding.UTF8, string.Empty).ReadBytes(16);
+
+            Assert.That(MemUtil.ArraysEqual(outBytes, _pbReferenceCt), Is.True);
         }
 
         [Test]
@@ -55,8 +68,10 @@ namespace ModernKeePassLib.Test.Cryptography.Cipher
             inStream.Write(_pbReferenceCt, 0, _pbReferenceCt.Length);
             inStream.Position = 0;
             var aes = new StandardAesEngine();
+
             using var outStream = aes.DecryptStream(inStream, _pbTestKey, _pbIv);
             var outBytes = new BinaryReaderEx(outStream, Encoding.UTF8, string.Empty).ReadBytes(16);
+
             Assert.That(MemUtil.ArraysEqual(outBytes, _pbTestData), Is.True);
         }
     }

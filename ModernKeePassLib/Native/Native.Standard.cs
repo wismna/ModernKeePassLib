@@ -13,31 +13,20 @@ namespace ModernKeePassLib.Native
 			return true;
 		}
 
-        public static bool TransformKey256(byte[] pbNative, byte[] pbSeed, ulong uRounds)
-        {
-            return false;
-        }
-
-        public static System.PlatformID GetPlatformID()
-        {
-            return Environment.OSVersion.Platform;
-        }
-
-        internal static string DecodeArgsToPath(string strApp)
-        {
-            if (!string.IsNullOrEmpty(strApp)) return strApp;
-            return string.Empty;
-        }
-
-		internal static string EncodeDataToArgs(string v)
-		{
-			throw new NotImplementedException();
-		}
-
-        public static string DecodeArgsToData(string strApp)
+        public static string EncodeDataToArgs(string data)
         {
             throw new NotImplementedException();
         }
+        public static string DecodeArgsToData(string strArgs)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static int GetPlatformID()
+        {
+            return Environment.CurrentManagedThreadId;
+        }
+
     }
 
 	internal static class NativeMethods
@@ -82,6 +71,12 @@ namespace ModernKeePassLib.Native
 	        throw new NotImplementedException();
 	    }
 	}
+
+	public enum DataProtectionScope
+	{
+		CurrentUser,
+		LocalMachine
+	}
     
 	internal enum MemoryProtectionScope
 	{
@@ -103,4 +98,3 @@ namespace ModernKeePassLib.Native
 		}
 	}
 }
-

@@ -65,7 +65,14 @@ namespace ModernKeePassLib.Cryptography
 			if(vPassword.Length == 0) { uDictSize = 0; return false; }
 
 #if DEBUG
+#if ModernKeePassLib
+		    foreach (var ch in vPassword)
+		    {
+		        Debug.Assert(ch == char.ToLower(ch));
+		    }
+#else
 			Array.ForEach(vPassword, ch => Debug.Assert(ch == char.ToLower(ch)));
+#endif
 #endif
 
 			try { return IsPopularPasswordPriv(vPassword, out uDictSize); }

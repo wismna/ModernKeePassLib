@@ -28,9 +28,7 @@ using System.Text.RegularExpressions;
 #if !KeePassUAP
 using System.IO;
 using System.Threading;
-#if !ModernKeePassLib
 using System.Windows.Forms;
-#endif
 #endif
 
 using ModernKeePassLib.Utility;
@@ -288,7 +286,6 @@ namespace ModernKeePassLib.Native
 				return null;
 			};
 
-#if !ModernKeePassLib    
 			if((f & AppRunFlags.DoEvents) != AppRunFlags.None)
 			{
 				List<Form> lDisabledForms = new List<Form>();
@@ -318,7 +315,7 @@ namespace ModernKeePassLib.Native
 
 				return strRet;
 			}
-#endif
+
 			return fnRun();
 		}
 
@@ -367,7 +364,7 @@ namespace ModernKeePassLib.Native
 		public static bool TransformKey256(byte[] pBuf256, byte[] pKey256,
 			ulong uRounds)
 		{
-#if KeePassUAP || ModernKeePassLib
+#if KeePassUAP
 			return false;
 #else
 			if(!m_bAllowNative) return false;
@@ -398,7 +395,7 @@ namespace ModernKeePassLib.Native
 		{
 			puRounds = 0;
 
-#if KeePassUAP || ModernKeePassLib
+#if KeePassUAP
 			return false;
 #else
 			if(!m_bAllowNative) return false;

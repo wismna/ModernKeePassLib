@@ -25,13 +25,14 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-#if !KeePassUAP
 using System.Drawing;
+#if ModernKeePassLib
+using ModernKeePassLib.Cryptography;
+#else
 using System.Security.Cryptography;
 #endif
 
 using ModernKeePassLib.Collections;
-using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Cryptography.PasswordGenerator;
 using ModernKeePassLib.Native;
 using ModernKeePassLib.Security;
@@ -224,7 +225,7 @@ namespace ModernKeePassLib.Utility
 					Encoding.Default,
 					(uint)Encoding.Default.GetBytes("a").Length, null));
 #endif
-#if !ModernKeePassLib && !KeePassRT
+#if !ModernKeePassLib
 				l.Add(new StrEncodingInfo(StrEncodingType.Ascii,
 					"ASCII", Encoding.ASCII, 1, null));
 				l.Add(new StrEncodingInfo(StrEncodingType.Utf7,
@@ -238,7 +239,7 @@ namespace ModernKeePassLib.Utility
 				l.Add(new StrEncodingInfo(StrEncodingType.Utf16BE,
 					"Unicode (UTF-16 BE)", new UnicodeEncoding(true, false),
 					2, new byte[] { 0xFE, 0xFF }));
-#if (!ModernKeePassLib && !KeePassLibSD && !KeePassRT)
+#if !ModernKeePassLib && !KeePassLibSD
 				l.Add(new StrEncodingInfo(StrEncodingType.Utf32LE,
 					"Unicode (UTF-32 LE)", new UTF32Encoding(false, false),
 					4, new byte[] { 0xFF, 0xFE, 0x0, 0x0 }));
@@ -849,10 +850,8 @@ namespace ModernKeePassLib.Utility
 			Debug.Assert(strY != null);
 			if(strY == null) throw new ArgumentNullException("strY");
 
-#if !ModernKeePassLib
 			if(NativeMethods.SupportsStrCmpNaturally)
 				return NativeMethods.StrCmpNaturally(strX, strY);
-#endif
 
 			int cX = strX.Length;
 			int cY = strY.Length;
@@ -1376,7 +1375,7 @@ namespace ModernKeePassLib.Utility
 				byte[] pbEnc = CryptoUtil.ProtectData(pbPlain, m_pbOptEnt,
 					DataProtectionScope.CurrentUser);
 
-#if (!ModernKeePassLib && !KeePassLibSD)
+#if !ModernKeePassLib && !KeePassLibSD
 				return Convert.ToBase64String(pbEnc, Base64FormattingOptions.None);
 #else
 				return Convert.ToBase64String(pbEnc);
@@ -1489,7 +1488,7 @@ namespace ModernKeePassLib.Utility
 			Array.Reverse(pb);
 			for(int i = 0; i < pb.Length; ++i) pb[i] = (byte)(pb[i] ^ 0x65);
 
-#if (!ModernKeePassLib && !KeePassLibSD)
+#if !ModernKeePassLib && !KeePassLibSD
 			return Convert.ToBase64String(pb, Base64FormattingOptions.None);
 #else
 			return Convert.ToBase64String(pb);
@@ -1649,7 +1648,7 @@ namespace ModernKeePassLib.Utility
 
 			if(strMediaType == null) strMediaType = "application/octet-stream";
 
-#if (!ModernKeePassLib && !KeePassLibSD)
+#if !ModernKeePassLib && !KeePassLibSD
 			return ("data:" + strMediaType + ";base64," + Convert.ToBase64String(
 				pbData, Base64FormattingOptions.None));
 #else
@@ -1680,7 +1679,7 @@ namespace ModernKeePassLib.Utility
 
 			MemoryStream ms = new MemoryStream();
 
-#if ModernKeePassLib || KeePassRT
+#if ModernKeePassLib
 			Encoding enc = StrUtil.Utf8;
 #else
 			Encoding enc = Encoding.ASCII;

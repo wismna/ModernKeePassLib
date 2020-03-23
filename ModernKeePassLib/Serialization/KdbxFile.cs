@@ -26,8 +26,9 @@ using System.Security;
 using System.Text;
 using System.Xml;
 
-#if !KeePassUAP
-using System.Security.Cryptography;
+#if ModernKeePassLib
+using Windows.Storage;
+using ModernKeePassLib.Cryptography.Hash;
 #endif
 
 using ModernKeePassLib.Collections;
@@ -511,11 +512,33 @@ namespace ModernKeePassLib.Serialization
 
 				++iTry;
 			}
+#if ModernKeePassLib
+            while (StorageFile.GetFileFromPathAsync(strPath).GetResults() != null);
+#else
 			while(File.Exists(strPath));
+#endif
 
+#if ModernKeePassLib
+			byte[] pbData = pb.ReadData();
+            /*var file = FileSystem.Current.GetFileFromPathAsync(strPath).Result;
+			using (var stream = file.OpenAsync(FileAccess.ReadAndWrite).Result) {*/
+            var file = StorageFile.GetFileFromPathAsync(strPath).GetAwaiter().GetResult();
+            using (var stream = file.OpenAsync(FileAccessMode.ReadWrite).GetAwaiter().GetResult().AsStream())
+            {
+                stream.Write (pbData, 0, pbData.Length);
+			}
+			MemUtil.ZeroByteArray(pbData);
+#elif !KeePassLibSD
+			byte[] pbData = pb.ReadData();
+			File.WriteAllBytes(strPath, pbData);
+			MemUtil.ZeroByteArray(pbData);
+#else
+			FileStream fs = new FileStream(strPath, FileMode.Create,
+				FileAccess.Write, FileShare.None);
 			byte[] pbData = pb.ReadData();
 			try { File.WriteAllBytes(strPath, pbData); }
 			finally { if(pb.IsProtected) MemUtil.ZeroByteArray(pbData); }
+#endif
 		}
 	}
 }

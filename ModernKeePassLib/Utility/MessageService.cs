@@ -180,7 +180,7 @@ namespace ModernKeePassLib.Utility
 		internal static DialogResult SafeShowMessageBox(string strText, string strTitle,
 			MessageBoxButtons mb, MessageBoxIcon mi, MessageBoxDefaultButton mdb)
 		{
-#if (KeePassLibSD || KeePassRT)
+#if KeePassLibSD
 			return MessageBox.Show(strText, strTitle, mb, mi, mdb);
 #else
 			IWin32Window wnd = null;
@@ -215,7 +215,7 @@ namespace ModernKeePassLib.Utility
 #endif
 		}
 
-#if (!KeePassLibSD && !KeePassRT)
+#if !KeePassLibSD
 		internal delegate DialogResult SafeShowMessageBoxInternalDelegate(IWin32Window iParent,
 			string strText, string strTitle, MessageBoxButtons mb, MessageBoxIcon mi,
 			MessageBoxDefaultButton mdb);

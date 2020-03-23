@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -105,7 +105,7 @@ namespace ModernKeePassLib.Cryptography
 
 		internal static void TestFipsComplianceProblems()
 		{
-#if !KeePassUAP
+#if !ModernKeePassLib
 			try { using(RijndaelManaged r = new RijndaelManaged()) { } }
 			catch(Exception exAes)
 			{
@@ -131,7 +131,7 @@ namespace ModernKeePassLib.Cryptography
 				0x75, 0xD1, 0x1B, 0x0E, 0x3A, 0x68, 0xC4, 0x22,
 				0x3D, 0x88, 0xDB, 0xF0, 0x17, 0x97, 0x7D, 0xD7 };
 
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 			AesEngine aes = new AesEngine();
 			aes.Init(true, new KeyParameter(pbKey));
 			if(aes.GetBlockSize() != pbData.Length)
@@ -550,7 +550,7 @@ namespace ModernKeePassLib.Cryptography
 			// (test vector for Argon2d 1.3); also on
 			// https://tools.ietf.org/html/draft-irtf-cfrg-argon2-00
 
-			KdfParameters p = kdf.GetDefaultParameters();
+			var p = kdf.GetDefaultParameters();
 			kdf.Randomize(p);
 
 			Debug.Assert(p.GetUInt32(Argon2Kdf.ParamVersion, 0) == 0x13U);
@@ -766,7 +766,7 @@ namespace ModernKeePassLib.Cryptography
 			pbMan = CryptoUtil.HashSha256(pbMan);
 
 			AesKdf kdf = new AesKdf();
-			KdfParameters p = kdf.GetDefaultParameters();
+			var p = kdf.GetDefaultParameters();
 			p.SetUInt64(AesKdf.ParamRounds, uRounds);
 			p.SetByteArray(AesKdf.ParamSeed, pbSeed);
 			byte[] pbKdf = kdf.Transform(pbKey, p);
@@ -778,7 +778,7 @@ namespace ModernKeePassLib.Cryptography
 
 		private static void TestNativeKeyTransform(Random r)
 		{
-#if DEBUG
+#if !ModernKeePassLib && DEBUG
 			byte[] pbOrgKey = CryptoRandom.Instance.GetRandomBytes(32);
 			byte[] pbSeed = CryptoRandom.Instance.GetRandomBytes(32);
 			ulong uRounds = (ulong)r.Next(1, 0x3FFF);
@@ -915,7 +915,7 @@ namespace ModernKeePassLib.Cryptography
 
 		private static void TestNativeLib()
 		{
-#if DEBUG && !ModernKeePassLib
+#if DEBUG
 			if(NativeLib.IsUnix())
 			{
 				if(NativeLib.EncodeDataToArgs("A\"B C\\D") !=
@@ -973,31 +973,31 @@ namespace ModernKeePassLib.Cryptography
 				throw new InvalidOperationException("MemUtil-7");
 
 			byte[] pbRes = MemUtil.ParseBase32("MY======");
-			byte[] pbExp = Encoding.ASCII.GetBytes("f");
+			byte[] pbExp = Encoding.UTF8.GetBytes("f");
 			if(!MemUtil.ArraysEqual(pbRes, pbExp)) throw new Exception("Base32-1");
 
 			pbRes = MemUtil.ParseBase32("MZXQ====");
-			pbExp = Encoding.ASCII.GetBytes("fo");
+			pbExp = Encoding.UTF8.GetBytes("fo");
 			if(!MemUtil.ArraysEqual(pbRes, pbExp)) throw new Exception("Base32-2");
 
 			pbRes = MemUtil.ParseBase32("MZXW6===");
-			pbExp = Encoding.ASCII.GetBytes("foo");
+			pbExp = Encoding.UTF8.GetBytes("foo");
 			if(!MemUtil.ArraysEqual(pbRes, pbExp)) throw new Exception("Base32-3");
 
 			pbRes = MemUtil.ParseBase32("MZXW6YQ=");
-			pbExp = Encoding.ASCII.GetBytes("foob");
+			pbExp = Encoding.UTF8.GetBytes("foob");
 			if(!MemUtil.ArraysEqual(pbRes, pbExp)) throw new Exception("Base32-4");
 
 			pbRes = MemUtil.ParseBase32("MZXW6YTB");
-			pbExp = Encoding.ASCII.GetBytes("fooba");
+			pbExp = Encoding.UTF8.GetBytes("fooba");
 			if(!MemUtil.ArraysEqual(pbRes, pbExp)) throw new Exception("Base32-5");
 
 			pbRes = MemUtil.ParseBase32("MZXW6YTBOI======");
-			pbExp = Encoding.ASCII.GetBytes("foobar");
+			pbExp = Encoding.UTF8.GetBytes("foobar");
 			if(!MemUtil.ArraysEqual(pbRes, pbExp)) throw new Exception("Base32-6");
 
 			pbRes = MemUtil.ParseBase32("JNSXSIDQOJXXM2LEMVZCAYTBONSWIIDPNYQG63TFFV2GS3LFEBYGC43TO5XXEZDTFY======");
-			pbExp = Encoding.ASCII.GetBytes("Key provider based on one-time passwords.");
+			pbExp = Encoding.UTF8.GetBytes("Key provider based on one-time passwords.");
 			if(!MemUtil.ArraysEqual(pbRes, pbExp)) throw new Exception("Base32-7");
 
 			int i = 0 - 0x10203040;
@@ -1150,7 +1150,7 @@ namespace ModernKeePassLib.Cryptography
 		private static void TestUrlUtil()
 		{
 #if DEBUG
-#if !KeePassUAP
+#if !ModernKeePassLib && !KeePassUAP
 			Debug.Assert(Uri.UriSchemeHttp.Equals("http", StrUtil.CaseIgnoreCmp));
 			Debug.Assert(Uri.UriSchemeHttps.Equals("https", StrUtil.CaseIgnoreCmp));
 #endif

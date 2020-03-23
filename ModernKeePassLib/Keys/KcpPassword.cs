@@ -99,8 +99,13 @@ namespace ModernKeePassLib.Keys
 		{
 			try
 			{
+#if ModernKeePassLib
+                // TODO: find a way to implement this
+			    return true;
+#else
 				string str = StrUtil.Utf8.GetString(pb);
 				return str.IsNormalized(NormalizationForm.FormC);
+#endif
 			}
 			catch(Exception) { Debug.Assert(false); }
 

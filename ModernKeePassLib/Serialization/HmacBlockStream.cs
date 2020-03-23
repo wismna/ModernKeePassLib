@@ -23,7 +23,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-#if !KeePassUAP
+#if ModernKeePassLib
+using ModernKeePassLib.Cryptography.Hash;
+#elif !KeePassUAP
 using System.Security.Cryptography;
 #endif
 
@@ -39,7 +41,7 @@ namespace ModernKeePassLib.Serialization
 		private Stream m_sBase;
 		private readonly bool m_bWriting;
 		private readonly bool m_bVerify;
-		private byte[] m_pbKey;
+		private readonly byte[] m_pbKey;
 
 		private bool m_bEos = false;
 		private byte[] m_pbBuffer;

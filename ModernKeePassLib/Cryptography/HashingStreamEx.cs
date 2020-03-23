@@ -22,8 +22,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-
-#if !KeePassUAP
+#if ModernKeePassLib
+using ModernKeePassLib.Cryptography.Hash;
+#elif !KeePassUAP
 using System.Security.Cryptography;
 #endif
 

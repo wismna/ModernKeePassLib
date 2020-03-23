@@ -248,6 +248,33 @@ namespace ModernKeePassLib.Keys
 
 			try
 			{
+#if ModernKeePassLib
+
+				var doc = XDocument.Load(ms);
+
+				var el = doc.Root;
+
+				if((el == null) || !el.Name.LocalName.Equals(RootElementName))
+					return null;
+				if(el.DescendantNodes().Count() < 2)
+					return null;
+
+				foreach(var xmlChild in el.Descendants())
+				{
+					if(xmlChild.Name == MetaElementName) { } // Ignore Meta
+					else if(xmlChild.Name == KeyElementName)
+					{
+						foreach(var xmlKeyChild in xmlChild.Descendants())
+						{
+							if(xmlKeyChild.Name == KeyDataElementName)
+							{
+								if(pbKeyData == null)
+									pbKeyData = Convert.FromBase64String(xmlKeyChild.Value);
+							}
+						}
+					}
+				}
+#else
 				XmlDocument doc = XmlUtilEx.CreateXmlDocument();
 				doc.Load(ms);
 
@@ -270,6 +297,7 @@ namespace ModernKeePassLib.Keys
 						}
 					}
 				}
+#endif
 			}
 			catch(Exception) { pbKeyData = null; }
 			finally { ms.Dispose(); }

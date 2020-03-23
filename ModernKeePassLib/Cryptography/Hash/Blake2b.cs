@@ -23,9 +23,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
-#if !KeePassUAP
+#if ModernKeePassLib
+#elif !KeePassUAP
 using System.Security.Cryptography;
 #endif
 
@@ -33,8 +35,14 @@ using ModernKeePassLib.Utility;
 
 namespace ModernKeePassLib.Cryptography.Hash
 {
-	public sealed class Blake2b : HashAlgorithm
+	public sealed class Blake2b : IDisposable
 	{
+	    protected int HashSizeValue;
+	    protected internal byte[] HashValue;
+	    protected int State = 0;
+
+	    private bool m_bDisposed = false;
+
 		private const int NbRounds = 12;
 		private const int NbBlockBytes = 128;
 		private const int NbMaxOutBytes = 64;
@@ -72,6 +80,23 @@ namespace ModernKeePassLib.Cryptography.Hash
 		private ulong[] m_m = new ulong[16];
 		private ulong[] m_v = new ulong[16];
 
+	    public int HashSize
+	    {
+	        get { return HashSizeValue; }
+	    }
+
+	    public byte[] Hash
+	    {
+	        get
+	        {
+	            if (m_bDisposed)
+	                throw new ObjectDisposedException(null);
+	            if (State != 0)
+	                throw new InvalidOperationException("Blak2B Cryptography Hash Not Yet Finalized");
+	            return (byte[])HashValue.Clone();
+	        }
+	    }
+
 		public Blake2b()
 		{
 			m_cbHashLength = NbMaxOutBytes;
@@ -91,7 +116,7 @@ namespace ModernKeePassLib.Cryptography.Hash
 			Initialize();
 		}
 
-		public override void Initialize()
+		public void Initialize()
 		{
 			Debug.Assert(m_h.Length == g_vIV.Length);
 			Array.Copy(g_vIV, m_h, m_h.Length);
@@ -166,7 +191,7 @@ namespace ModernKeePassLib.Cryptography.Hash
 			if(m_t[0] < cb) ++m_t[1];
 		}
 
-		protected override void HashCore(byte[] array, int ibStart, int cbSize)
+	    private void HashCore(byte[] array, int ibStart, int cbSize)
 		{
 			Debug.Assert(m_f[0] == 0);
 
@@ -201,7 +226,7 @@ namespace ModernKeePassLib.Cryptography.Hash
 			}
 		}
 
-		protected override byte[] HashFinal()
+	    private byte[] HashFinal()
 		{
 			if(m_f[0] != 0) { Debug.Assert(false); throw new InvalidOperationException(); }
 			Debug.Assert(((m_t[1] == 0) && (m_t[0] == 0)) ||
@@ -228,5 +253,142 @@ namespace ModernKeePassLib.Cryptography.Hash
 			MemUtil.ZeroByteArray(pbHash);
 			return pbShort;
 		}
+
+	    public byte[] ComputeHash(Stream inputStream)
+	    {
+	        if (m_bDisposed)
+	            throw new ObjectDisposedException(null);
+
+	        // Default the buffer size to 4K.
+	        byte[] buffer = new byte[4096];
+	        int bytesRead;
+	        do
+	        {
+	            bytesRead = inputStream.Read(buffer, 0, 4096);
+	            if (bytesRead > 0)
+	            {
+	                HashCore(buffer, 0, bytesRead);
+	            }
+	        } while (bytesRead > 0);
+
+	        HashValue = HashFinal();
+	        byte[] Tmp = (byte[])HashValue.Clone();
+	        Initialize();
+	        return (Tmp);
+	    }
+
+	    public byte[] ComputeHash(byte[] buffer)
+	    {
+	        if (m_bDisposed)
+	            throw new ObjectDisposedException(null);
+
+	        // Do some validation
+	        if (buffer == null) throw new ArgumentNullException("buffer");
+
+	        HashCore(buffer, 0, buffer.Length);
+	        HashValue = HashFinal();
+	        byte[] Tmp = (byte[])HashValue.Clone();
+	        Initialize();
+	        return (Tmp);
+	    }
+
+	    public byte[] ComputeHash(byte[] buffer, int offset, int count)
+	    {
+	        // Do some validation
+	        if (buffer == null)
+	            throw new ArgumentNullException("buffer");
+	        if (offset < 0)
+	            throw new ArgumentOutOfRangeException("offset", "ArgumentOutOfRange_NeedNonNegNum");
+	        if (count < 0 || (count > buffer.Length))
+	            throw new ArgumentException("Argument_InvalidValue");
+	        if ((buffer.Length - count) < offset)
+	            throw new ArgumentException("Argument_InvalidOffLen");
+
+	        if (m_bDisposed)
+	            throw new ObjectDisposedException(null);
+
+	        HashCore(buffer, offset, count);
+	        HashValue = HashFinal();
+	        byte[] Tmp = (byte[])HashValue.Clone();
+	        Initialize();
+	        return (Tmp);
+	    }
+
+        public int TransformBlock(byte[] inputBuffer, int inputOffset, int inputCount, byte[] outputBuffer, int outputOffset)
+        {
+            // Do some validation, we let BlockCopy do the destination array validation
+            if (inputBuffer == null)
+                throw new ArgumentNullException("inputBuffer");
+            if (inputOffset < 0)
+                throw new ArgumentOutOfRangeException("inputOffset", "ArgumentOutOfRange_NeedNonNegNum");
+            if (inputCount < 0 || (inputCount > inputBuffer.Length))
+                throw new ArgumentException("Argument_InvalidValue");
+            if ((inputBuffer.Length - inputCount) < inputOffset)
+                throw new ArgumentException("Argument_InvalidOffLen");
+
+            if (m_bDisposed)
+                throw new ObjectDisposedException(null);
+
+            // Change the State value
+            State = 1;
+            HashCore(inputBuffer, inputOffset, inputCount);
+            if ((outputBuffer != null) && ((inputBuffer != outputBuffer) || (inputOffset != outputOffset)))
+                Buffer.BlockCopy(inputBuffer, inputOffset, outputBuffer, outputOffset, inputCount);
+            return inputCount;
+        }
+
+        public byte[] TransformFinalBlock(byte[] inputBuffer, int inputOffset, int inputCount)
+        {
+            // Do some validation
+            if (inputBuffer == null)
+                throw new ArgumentNullException("inputBuffer");
+            if (inputOffset < 0)
+                throw new ArgumentOutOfRangeException("inputOffset", "ArgumentOutOfRange_NeedNonNegNum");
+            if (inputCount < 0 || (inputCount > inputBuffer.Length))
+                throw new ArgumentException("Argument_InvalidValue");
+            if ((inputBuffer.Length - inputCount) < inputOffset)
+                throw new ArgumentException("Argument_InvalidOffLen");
+
+            if (m_bDisposed)
+                throw new ObjectDisposedException(null);
+
+            HashCore(inputBuffer, inputOffset, inputCount);
+            HashValue = HashFinal();
+            byte[] outputBytes;
+            if (inputCount != 0)
+            {
+                outputBytes = new byte[inputCount];
+                Array.Copy(inputBuffer, inputOffset, outputBytes, 0, inputCount);
+            }
+            else
+            {
+                outputBytes = MemUtil.EmptyByteArray;
+            }
+            // reset the State value
+            State = 0;
+            return outputBytes;
+        }
+
+	    public void Dispose()
+	    {
+	        Dispose(true);
+	        GC.SuppressFinalize(this);
+	    }
+
+	    public void Clear()
+	    {
+	        (this as IDisposable).Dispose();
+	    }
+
+	    private void Dispose(bool disposing)
+	    {
+	        if (disposing)
+	        {
+	            if (HashValue != null)
+	                Array.Clear(HashValue, 0, HashValue.Length);
+	            HashValue = null;
+	            m_bDisposed = true;
+	        }
+	    }
 	}
 }

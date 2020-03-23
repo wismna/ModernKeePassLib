@@ -21,7 +21,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+#if !KeePassUAP
 using System.Drawing;
+#endif
 
 using ModernKeePassLib.Collections;
 using ModernKeePassLib.Interfaces;
@@ -936,7 +938,7 @@ namespace ModernKeePassLib
 
 			if(m_bCompareNaturally) return StrUtil.CompareNaturally(strA, strB);
 
-#if ModernKeePassLib || KeePassRT
+#if ModernKeePassLib
 			return string.Compare(strA, strB, m_bCaseInsensitive ?
 				StringComparison.CurrentCultureIgnoreCase : StringComparison.CurrentCulture);
 #else

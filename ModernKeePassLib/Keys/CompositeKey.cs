@@ -26,7 +26,6 @@ using System.Threading;
 using ModernKeePassLib.Cryptography;
 using ModernKeePassLib.Cryptography.KeyDerivation;
 using ModernKeePassLib.Interfaces;
-using ModernKeePassLib.Native;
 using ModernKeePassLib.Resources;
 using ModernKeePassLib.Security;
 using ModernKeePassLib.Utility;
@@ -122,7 +121,7 @@ namespace ModernKeePassLib.Keys
 			{
 				if(pKey == null) { Debug.Assert(false); continue; }
 
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 				if(pKey.GetType() == tUserKeyType)
 					return true;
 #else
@@ -149,7 +148,7 @@ namespace ModernKeePassLib.Keys
 			{
 				if(pKey == null) { Debug.Assert(false); continue; }
 
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 				if(pKey.GetType() == tUserKeyType)
 					return pKey;
 #else
@@ -279,9 +278,11 @@ namespace ModernKeePassLib.Keys
 
 		internal ProtectedBinary GenerateKey32Ex(KdfParameters p, IStatusLogger sl)
 		{
-			if(sl == null) return GenerateKey32(p);
-
-			CkGkTaskInfo ti = new CkGkTaskInfo();
+#if ModernKeePassLib
+            return GenerateKey32(p);
+#else
+            if (sl == null) return GenerateKey32(p);
+            CkGkTaskInfo ti = new CkGkTaskInfo();
 
 			ThreadStart f = delegate()
 			{
@@ -319,6 +320,7 @@ namespace ModernKeePassLib.Keys
 
 			Debug.Assert(ti.Key != null);
 			return ti.Key;
+#endif
 		}
 
 		private void ValidateUserKeys()

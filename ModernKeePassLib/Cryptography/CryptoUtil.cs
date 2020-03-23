@@ -23,8 +23,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
-
-#if !KeePassUAP
+using ModernKeePassLib.Cryptography.Cipher;
+#if ModernKeePassLib
+using ModernKeePassLib.Cryptography.Hash;
+#elif !KeePassUAP
 using System.Security.Cryptography;
 #endif
 
@@ -105,7 +107,8 @@ namespace ModernKeePassLib.Cryptography
 			return pbHash;
 		}
 
-		internal static byte[] HashSha256(string strFilePath)
+#if !ModernKeePassLib
+        internal static byte[] HashSha256(string strFilePath)
 		{
 			byte[] pbHash = null;
 
@@ -120,6 +123,7 @@ namespace ModernKeePassLib.Cryptography
 
 			return pbHash;
 		}
+#endif
 
 		/// <summary>
 		/// Create a cryptographic key of length <paramref name="cbOut" />
@@ -181,7 +185,7 @@ namespace ModernKeePassLib.Cryptography
 			return pbRet;
 		}
 
-#if !KeePassUAP
+#if !ModernKeePassLib
 		private static bool? g_obAesCsp = null;
 		public static SymmetricAlgorithm CreateAes()
 		{

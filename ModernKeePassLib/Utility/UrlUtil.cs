@@ -25,6 +25,10 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
+#if ModernKeePassLib
+using Windows.Storage;
+#endif
+
 using ModernKeePassLib.Native;
 
 namespace ModernKeePassLib.Utility
@@ -40,7 +44,11 @@ namespace ModernKeePassLib.Utility
 
 		public static char LocalDirSepChar
 		{
+#if ModernKeePassLib
+            get { return '\\'; }
+#else
 			get { return Path.DirectorySeparatorChar; }
+#endif
 		}
 
 		private static char[] g_vDirSepChars = null;
@@ -58,7 +66,7 @@ namespace ModernKeePassLib.Utility
 
 					if(!l.Contains(UrlUtil.LocalDirSepChar))
 					{
-						//Debug.Assert(false);
+						Debug.Assert(false);
 						l.Add(UrlUtil.LocalDirSepChar);
 					}
 
@@ -278,13 +286,14 @@ namespace ModernKeePassLib.Utility
 			if(strUrl == null) { Debug.Assert(false); throw new ArgumentNullException("strUrl"); }
 			if(strUrl.Length == 0) { Debug.Assert(false); return string.Empty; }
 
-			if(!strUrl.StartsWith(Uri.UriSchemeFile + ":", StrUtil.CaseIgnoreCmp))
+#if !ModernKeePassLib
+            if(!strUrl.StartsWith(Uri.UriSchemeFile + ":", StrUtil.CaseIgnoreCmp))
 			{
 				Debug.Assert(false);
 				return strUrl;
 			}
-
-			try
+#endif
+            try
 			{
 				Uri uri = new Uri(strUrl);
 				string str = uri.LocalPath;
@@ -298,7 +307,7 @@ namespace ModernKeePassLib.Utility
 
 		public static bool UnhideFile(string strFile)
 		{
-#if (ModernKeePassLib || KeePassLibSD)
+#if ModernKeePassLib || KeePassLibSD
 			return false;
 #else
 			if(strFile == null) throw new ArgumentNullException("strFile");
@@ -318,7 +327,7 @@ namespace ModernKeePassLib.Utility
 
 		public static bool HideFile(string strFile, bool bHide)
 		{
-#if (ModernKeePassLib || KeePassLibSD)
+#if ModernKeePassLib || KeePassLibSD
 			return false;
 #else
 			if(strFile == null) throw new ArgumentNullException("strFile");
@@ -484,7 +493,16 @@ namespace ModernKeePassLib.Utility
 			}
 
 			string str;
+			try
+			{
+#if ModernKeePassLib
+                var dirT = StorageFolder.GetFolderFromPathAsync(
+                    strPath).GetResults();
+                str = dirT.Path;
+#else
 			try { str = Path.GetFullPath(strPath); }
+#endif
+			}
 			catch(Exception) { Debug.Assert(false); return strPath; }
 
 			Debug.Assert((str.IndexOf("\\..\\") < 0) || NativeLib.IsUnix());
@@ -692,11 +710,10 @@ namespace ModernKeePassLib.Utility
 			string strDir;
 			if(NativeLib.IsUnix())
 				strDir = NativeMethods.GetUserRuntimeDir();
-#if KeePassUAP
+#if KeePassUAP || ModernKeePassLib
 			else strDir = Windows.Storage.ApplicationData.Current.TemporaryFolder.Path;
 #else
 			else strDir = Path.GetTempPath();
-#endif
 
 			try
 			{
@@ -704,10 +721,11 @@ namespace ModernKeePassLib.Utility
 			}
 			catch(Exception) { Debug.Assert(false); }
 
+#endif
 			return strDir;
 		}
 
-#if !KeePassLibSD
+#if !ModernKeePassLib && !KeePassLibSD
 		// Structurally mostly equivalent to UrlUtil.GetFileInfos
 		public static List<string> GetFilePaths(string strDir, string strPattern,
 			SearchOption opt)

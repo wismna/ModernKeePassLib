@@ -23,7 +23,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-#if (!ModernKeePassLib && !KeePassUAP)
+
+#if !ModernKeePassLib && !KeePassLibSD
 using System.Security.AccessControl;
 #endif
 
@@ -220,15 +221,15 @@ namespace ModernKeePassLib.Serialization
 				// FileAttributes faBase = FileAttributes.Normal;
 				try
 				{
-#if !ModernKeePassLib
+#if !(ModernKeePassLib || KeePassUAP)
 					FileAttributes faBase = File.GetAttributes(m_iocBase.Path);
 					bEfsEncrypted = ((long)(faBase & FileAttributes.Encrypted) != 0);
 					try { if(bEfsEncrypted) File.Decrypt(m_iocBase.Path); } // For TxF
 					catch(Exception) { Debug.Assert(false); }
-#endif
+
 					otCreation = File.GetCreationTimeUtc(m_iocBase.Path);
 					sStat = SimpleStat.Get(m_iocBase.Path);
-#if !ModernKeePassLib
+
 					// May throw with Mono
 					FileSecurity sec = File.GetAccessControl(m_iocBase.Path, acs);
 					if(sec != null) pbSec = sec.GetSecurityDescriptorBinaryForm();
@@ -522,8 +523,8 @@ namespace ModernKeePassLib.Serialization
 #endif
 			return false;
 		}
-
-		internal static void ClearOld()
+#if !ModernKeePassLib
+        internal static void ClearOld()
 		{
 			try
 			{
@@ -545,5 +546,6 @@ namespace ModernKeePassLib.Serialization
 			}
 			catch(Exception) { Debug.Assert(false); }
 		}
+#endif
 	}
 }

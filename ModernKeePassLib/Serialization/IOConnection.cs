@@ -24,6 +24,7 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
+
 #if (!ModernKeePassLib && !KeePassLibSD && !KeePassUAP)
 using System.Net.Cache;
 using System.Net.Security;
@@ -33,12 +34,16 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 #endif
 
+#if ModernKeePassLib
+using Windows.Storage;
+using Windows.Storage.Streams;
+#endif
 using ModernKeePassLib.Native;
 using ModernKeePassLib.Utility;
 
 namespace ModernKeePassLib.Serialization
 {
-#if (!ModernKeePassLib && !KeePassLibSD)
+#if !ModernKeePassLib && !KeePassLibSD
 	internal sealed class IOWebClient : WebClient
 	{
 		private IOConnectionInfo m_ioc;
@@ -240,7 +245,7 @@ namespace ModernKeePassLib.Serialization
 
 	public static class IOConnection
 	{
-#if (!ModernKeePassLib && !KeePassLibSD)
+#if !ModernKeePassLib && !KeePassLibSD
 		private static ProxyServerType m_pstProxyType = ProxyServerType.System;
 		private static string m_strProxyAddr = string.Empty;
 		private static string m_strProxyPort = string.Empty;
@@ -269,7 +274,7 @@ namespace ModernKeePassLib.Serialization
 
 		public static event EventHandler<IOAccessEventArgs> IOAccessPre;
 
-#if (!ModernKeePassLib && !KeePassLibSD)
+#if !ModernKeePassLib && !KeePassLibSD
 		// Allow self-signed certificates, expired certificates, etc.
 		private static bool AcceptCertificate(object sender,
 			X509Certificate certificate, X509Chain chain,
@@ -603,7 +608,7 @@ namespace ModernKeePassLib.Serialization
 #endif
 		}
 
-#if (!ModernKeePassLib && !KeePassLibSD)
+#if !ModernKeePassLib && !KeePassLibSD
 		public static Stream OpenWrite(IOConnectionInfo ioc)
 		{
 			if(ioc == null) { Debug.Assert(false); return null; }
@@ -802,7 +807,7 @@ namespace ModernKeePassLib.Serialization
 #endif
 		}
 
-#if (!ModernKeePassLib && !KeePassLibSD)
+#if !ModernKeePassLib && !KeePassLibSD
 		private static bool SendCommand(IOConnectionInfo ioc, string strMethod)
 		{
 			try
@@ -910,6 +915,6 @@ namespace ModernKeePassLib.Serialization
 			return (wr is FileWebRequest);
 #endif
 		}
-#endif // ModernKeePass
+#endif // ModernKeePassLib
 	}
 }

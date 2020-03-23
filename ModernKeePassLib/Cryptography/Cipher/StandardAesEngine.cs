@@ -24,17 +24,17 @@ using System.IO;
 using System.Security;
 using System.Text;
 
-#if !KeePassUAP
+#if ModernKeePassLib
+using ModernKeePassLib.Resources;
+#else
 using System.Security.Cryptography;
 #endif
-
-using ModernKeePassLib.Resources;
 
 namespace ModernKeePassLib.Cryptography.Cipher
 {
 	public sealed class StandardAesEngine : ICipherEngine
 	{
-#if !KeePassUAP
+#if !ModernKeePassLib && !KeePassUAP
 		private const CipherMode SaeCipherMode = CipherMode.CBC;
 		private const PaddingMode SaePaddingMode = PaddingMode.PKCS7;
 #endif
@@ -97,7 +97,7 @@ namespace ModernKeePassLib.Cryptography.Cipher
 		{
 			StandardAesEngine.ValidateArguments(s, bEncrypt, pbKey, pbIV);
 
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 			return StandardAesEngineExt.CreateStream(s, bEncrypt, pbKey, pbIV);
 #else
 			SymmetricAlgorithm a = CryptoUtil.CreateAes();

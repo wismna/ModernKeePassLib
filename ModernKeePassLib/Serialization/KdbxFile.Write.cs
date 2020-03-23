@@ -26,7 +26,7 @@ using System.Security;
 using System.Text;
 using System.Xml;
 
-#if !KeePassUAP
+#if !ModernKeePassLib && !KeePassUAP
 using System.Drawing;
 using System.Security.Cryptography;
 #endif
@@ -204,7 +204,7 @@ namespace ModernKeePassLib.Serialization
 					throw new ArgumentOutOfRangeException("fmt");
 				}
 
-				m_xmlWriter = XmlUtilEx.CreateXmlWriter(sXml);
+				m_xmlWriter = XmlUtilEx.CreateXmlWriter(sXml, m_uFileVersion >= FileVersion32_4);
 
 				WriteDocument(pgRoot);
 

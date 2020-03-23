@@ -23,7 +23,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 
-#if !KeePassUAP
+#if !ModernKeePassLib && !KeePassUAP
 using System.Security.Cryptography;
 
 namespace ModernKeePassLib.Cryptography

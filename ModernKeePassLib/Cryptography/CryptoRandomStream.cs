@@ -20,7 +20,9 @@
 using System;
 using System.Diagnostics;
 
-#if !KeePassUAP
+#if ModernKeePassLib
+using ModernKeePassLib.Cryptography.Hash;
+#elif !KeePassUAP
 using System.Security.Cryptography;
 #endif
 

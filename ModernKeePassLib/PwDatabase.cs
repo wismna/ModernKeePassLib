@@ -49,8 +49,6 @@ namespace ModernKeePassLib
 		internal const int DefaultHistoryMaxItems = 10; // -1 = unlimited
 		internal const long DefaultHistoryMaxSize = 6 * 1024 * 1024; // -1 = unlimited
 
-		private static bool m_bPrimaryCreated = false;
-
 		// Initializations: see Clear()
 		private PwGroup m_pgRootGroup = null;
 		private PwObjectList<PwDeletedObject> m_vDeletedObjects = new PwObjectList<PwDeletedObject>();

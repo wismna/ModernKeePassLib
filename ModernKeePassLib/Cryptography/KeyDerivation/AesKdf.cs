@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -122,6 +122,7 @@ namespace ModernKeePassLib.Cryptography.KeyDerivation
 			try
 			{
 #if !ModernKeePassLib
+				// Try to use the native library first
 				if(NativeLib.TransformKey256(pbNewKey, pbKeySeed32, uNumRounds))
 					return CryptoUtil.HashSha256(pbNewKey);
 #endif
@@ -140,18 +141,16 @@ namespace ModernKeePassLib.Cryptography.KeyDerivation
 		public static bool TransformKeyManaged(byte[] pbNewKey32, byte[] pbKeySeed32,
 			ulong uNumRounds)
 		{
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 			KeyParameter kp = new KeyParameter(pbKeySeed32);
 			AesEngine aes = new AesEngine();
 			aes.Init(true, kp);
 
-			for(ulong u = 0; u < uNumRounds; ++u)
+			for(ulong i = 0; i < uNumRounds; ++i)
 			{
 				aes.ProcessBlock(pbNewKey32, 0, pbNewKey32, 0);
 				aes.ProcessBlock(pbNewKey32, 16, pbNewKey32, 16);
 			}
-
-			aes.Reset();
 #else
 			byte[] pbIV = new byte[16];
 
@@ -213,7 +212,7 @@ namespace ModernKeePassLib.Cryptography.KeyDerivation
 				pbNewKey[i] = (byte)i;
 			}
 
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 			KeyParameter kp = new KeyParameter(pbKey);
 			AesEngine aes = new AesEngine();
 			aes.Init(true, kp);
@@ -248,7 +247,7 @@ namespace ModernKeePassLib.Cryptography.KeyDerivation
 					{
 						for(ulong j = 0; j < BenchStep; ++j)
 						{
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 							aes.ProcessBlock(pbNewKey, 0, pbNewKey, 0);
 							aes.ProcessBlock(pbNewKey, 16, pbNewKey, 16);
 #else
@@ -269,7 +268,7 @@ namespace ModernKeePassLib.Cryptography.KeyDerivation
 					}
 
 					p.SetUInt64(ParamRounds, uRounds);
-#if KeePassUAP
+#if ModernKeePassLib || KeePassUAP
 					aes.Reset();
 #else
 				}

@@ -95,7 +95,7 @@ namespace ModernKeePassLib.Test.Serialization
                 var file = new KdbxFile(database);
                 file.Load(ms, KdbxFormat.PlainXml, null);
             }
-            Assert.That(database.Color.ToArgb(), Is.EqualTo(Color.Red.ToArgb()));
+            //Assert.That(database.Color.ToArgb(), Is.EqualTo(Color.Red.ToArgb()));
             Assert.That(database.Compression, Is.EqualTo(PwCompressionAlgorithm.GZip));
             //Assert.That (database.CustomData, Is.EqualTo ());
             Assert.True(database.CustomIcons.Count == 0);
@@ -118,7 +118,7 @@ namespace ModernKeePassLib.Test.Serialization
                 database.DescriptionChanged = date;
                 database.DefaultUserName = TestDefaultUserName;
                 database.DefaultUserNameChanged = date;
-                database.Color = Color.Red;
+                //database.Color = Color.Red;
                 database.MasterKeyChanged = date;
                 database.RecycleBinChanged = date;
                 database.EntryTemplatesGroupChanged = date;

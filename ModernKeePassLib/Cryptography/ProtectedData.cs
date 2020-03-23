@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography;
 using ModernKeePassLib.Native;
 
 namespace ModernKeePassLib.Cryptography

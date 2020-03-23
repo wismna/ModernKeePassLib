@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using ModernKeePassLib.Keys;
 using ModernKeePassLib.Utility;
 using Windows.Storage;
-using Windows.Storage.Streams;
 using NUnit.Framework;
 
 namespace ModernKeePassLib.Test.Keys
