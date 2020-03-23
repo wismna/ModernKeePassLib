@@ -10,7 +10,7 @@
     <PackageReleaseNotes>Implementation of KeePass library version 2.44</PackageReleaseNotes>
     <Copyright>Copyright © 2018 Geoffroy Bonneville</Copyright>
     <PackageTags>KeePass KeePassLib Portable PCL NetStandard</PackageTags>
-    <PackageLicenseExpression>https://www.gnu.org/licenses/gpl-3.0.en.html</PackageLicenseExpression>
+    <PackageLicenseExpression></PackageLicenseExpression>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
