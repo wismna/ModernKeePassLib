@@ -35,11 +35,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Native\ClipboardU.cs" />
-    <Content Include="Native\NativeLib.cs" />
-    <Content Include="Native\NativeMethods.cs" />
-    <Content Include="Native\NativeMethods.Unix.cs" />
-    <Content Include="Native\SimpleStat.cs" />
+    <None Include="Native\ClipboardU.cs" />
+    <None Include="Native\NativeLib.cs" />
+    <None Include="Native\NativeMethods.cs" />
+    <None Include="Native\NativeMethods.Unix.cs" />
+    <None Include="Native\SimpleStat.cs" />
     <None Include="Translation\KPControlCustomization.cs" />
     <None Include="Translation\KPFormCustomization.cs" />
     <None Include="Translation\KPStringTable.cs" />
