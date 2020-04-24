@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.2</TargetFramework>
     <Description>Portable KeePass Password Management Library that targets .Net Standard and WinRT. Allows reading, editing and writing to KeePass 2.x databases.</Description>
-    <Version>2.44.2</Version>
+    <Version>2.44.3</Version>
     <Authors>Geoffroy Bonneville</Authors>
     <Company>wismna</Company>
     <PackageProjectUrl>https://github.com/wismna/ModernKeePass</PackageProjectUrl>
@@ -55,7 +55,7 @@
     <PackageReference Include="Portable.BouncyCastle" Version="1.8.5" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0005" />
     <PackageReference Include="Splat" Version="3.0.0" />
-    <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.WindowsRuntime" Version="4.7.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
   </ItemGroup>
 

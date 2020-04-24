@@ -204,7 +204,7 @@ namespace ModernKeePassLib.Serialization
 					throw new ArgumentOutOfRangeException("fmt");
 				}
 
-				m_xmlWriter = XmlUtilEx.CreateXmlWriter(sXml, m_uFileVersion >= FileVersion32_4);
+				m_xmlWriter = XmlUtilEx.CreateXmlWriter(sXml);
 
 				WriteDocument(pgRoot);
 
