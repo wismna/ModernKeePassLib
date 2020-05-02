@@ -5,11 +5,15 @@
 # What is this ?
 
 ModernKeePassLib is a port of KeePassLib to .netstandard 1.2, distributed as a nuget package.
-The aim was to change as little as possible the original library. However, some workarounds have to be made as .netstandard misses quite a few features of the full .net framework.
+The aim was to change as little as possible the original library. However, some workarounds have to be made as .netstandard 1.2 misses quite a few features of the full .net framework.
 Main changes:
 - Removed the dependency on the filesystem
 - Added a dependency on Windows (I'm working on tring to find a way to remove it altogether)
 - Some features are handled by external nuget packages (cryptography, colors, etc.), so it may introduce small differences
+
+# Installation
+
+From [nuget.org](https://www.nuget.org/packages/ModernKeePassLib/)
 
 # Usage
 
@@ -30,3 +34,8 @@ compositeKey.AddUserKey(new KcpKeyFile(IOConnectionInfo.FromByteArray(KeyFileCon
 6. At this point, nothing is commited to disk, so you need to retrieve the byte array:
 `var contents = PwDatabase.IOConnectionInfo.Bytes;`
 7. Write the byte array to a file, to a stream, whatever !
+
+# Todo
+
+- Remove Windows dependencies entirely
+- Find a way to use Color class (handled by Splat at the moment, but I'm not satisfied)
