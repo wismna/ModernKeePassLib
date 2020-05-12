@@ -234,7 +234,7 @@ namespace ModernKeePassLib.Cryptography
 			try
 			{
 #if KeePassUAP
-                f(DiagnosticsExt.GetProcessEntropy(), true);
+				f(DiagnosticsExt.GetProcessEntropy(), true);
 #elif !KeePassLibSD && !ModernKeePassLib
 				using(Process p = Process.GetCurrentProcess())
 				{
@@ -281,7 +281,6 @@ namespace ModernKeePassLib.Cryptography
 		private byte[] GetCspRandom()
 		{
 			byte[] pb = new byte[32];
-
 
 			try { m_rng.GetBytes(pb); }
 			catch(Exception)

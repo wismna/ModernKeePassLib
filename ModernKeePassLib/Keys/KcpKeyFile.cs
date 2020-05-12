@@ -70,7 +70,7 @@ namespace ModernKeePassLib.Keys
 			Construct(IOConnectionInfo.FromByteArray(keyFile), false);
 		}
 #else
-        public KcpKeyFile(string strKeyFile)
+		public KcpKeyFile(string strKeyFile)
 		{
 			Construct(IOConnectionInfo.FromPath(strKeyFile), false);
 		}
@@ -191,7 +191,7 @@ namespace ModernKeePassLib.Keys
 #if ModernKeePassLib
         public static byte[] Create(byte[] pbAdditionalEntropy)
 #else
-        public static void Create(string strFilePath, byte[] pbAdditionalEntropy)
+		public static void Create(string strFilePath, byte[] pbAdditionalEntropy)
 #endif
 		{
 			byte[] pbKey32 = CryptoRandom.Instance.GetRandomBytes(32);
@@ -214,7 +214,7 @@ namespace ModernKeePassLib.Keys
 #if ModernKeePassLib
             return CreateXmlKeyFile(pbFinalKey32);
 #else
-            CreateXmlKeyFile(strFilePath, pbFinalKey32);
+			CreateXmlKeyFile(strFilePath, pbFinalKey32);
 #endif
 		}
 

@@ -3,11 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.2</TargetFramework>
     <Description>Portable KeePass Password Management Library that targets .Net Standard and WinRT. Allows reading, editing and writing to KeePass 2.x databases.</Description>
-    <Version>2.44.3</Version>
+    <Version>2.45.1</Version>
     <Authors>Geoffroy Bonneville</Authors>
     <Company>wismna</Company>
     <PackageProjectUrl>https://github.com/wismna/ModernKeePass</PackageProjectUrl>
-    <PackageReleaseNotes>Implementation of KeePass library version 2.44</PackageReleaseNotes>
+    <PackageReleaseNotes>Implementation of KeePass library version 2.45</PackageReleaseNotes>
     <Copyright>Copyright © 2018 Geoffroy Bonneville</Copyright>
     <PackageTags>KeePass KeePassLib Portable PCL NetStandard</PackageTags>
     <PackageLicenseExpression></PackageLicenseExpression>

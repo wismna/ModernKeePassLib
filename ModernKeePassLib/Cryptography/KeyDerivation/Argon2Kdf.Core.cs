@@ -468,7 +468,6 @@ namespace ModernKeePassLib.Cryptography.KeyDerivation
 
 #if ModernKeePassLib
 					    Task.Factory.StartNew(FillSegmentThr, ti);
-					    //ThreadPool.RunAsync(a => FillSegmentThr(ti));
 #else
 						if(!ThreadPool.QueueUserWorkItem(FillSegmentThr, ti))
 						{

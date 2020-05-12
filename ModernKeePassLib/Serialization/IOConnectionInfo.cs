@@ -1,6 +1,6 @@
 /*
   KeePass Password Safe - The Open-Source Password Manager
-  Copyright (C) 2003-2018 Dominik Reichl <dominik.reichl@t-online.de>
+  Copyright (C) 2003-2020 Dominik Reichl <dominik.reichl@t-online.de>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -336,7 +336,7 @@ namespace ModernKeePassLib.Serialization
 #if ModernKeePassLib
             if (IsLocalFile()) return Bytes != null;
 #else
-			if(IsLocalFile()) return File.Exists(m_strUrl);
+				return IOConnection.FileExists(this, false); // Raises event
 #endif
 
 			return true;

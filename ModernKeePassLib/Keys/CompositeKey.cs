@@ -281,8 +281,9 @@ namespace ModernKeePassLib.Keys
 #if ModernKeePassLib
             return GenerateKey32(p);
 #else
-            if (sl == null) return GenerateKey32(p);
-            CkGkTaskInfo ti = new CkGkTaskInfo();
+			if(sl == null) return GenerateKey32(p);
+
+			CkGkTaskInfo ti = new CkGkTaskInfo();
 
 			ThreadStart f = delegate()
 			{

@@ -108,7 +108,7 @@ namespace ModernKeePassLib.Cryptography
 		}
 
 #if !ModernKeePassLib
-        internal static byte[] HashSha256(string strFilePath)
+		internal static byte[] HashSha256(string strFilePath)
 		{
 			byte[] pbHash = null;
 

@@ -151,6 +151,8 @@ namespace ModernKeePassLib.Cryptography.KeyDerivation
 				aes.ProcessBlock(pbNewKey32, 0, pbNewKey32, 0);
 				aes.ProcessBlock(pbNewKey32, 16, pbNewKey32, 16);
 			}
+
+			aes.Reset();
 #else
 			byte[] pbIV = new byte[16];
 

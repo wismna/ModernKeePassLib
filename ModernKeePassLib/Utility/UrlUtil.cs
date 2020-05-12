@@ -287,13 +287,13 @@ namespace ModernKeePassLib.Utility
 			if(strUrl.Length == 0) { Debug.Assert(false); return string.Empty; }
 
 #if !ModernKeePassLib
-            if(!strUrl.StartsWith(Uri.UriSchemeFile + ":", StrUtil.CaseIgnoreCmp))
+			if(!strUrl.StartsWith(Uri.UriSchemeFile + ":", StrUtil.CaseIgnoreCmp))
 			{
 				Debug.Assert(false);
 				return strUrl;
 			}
 #endif
-            try
+			try
 			{
 				Uri uri = new Uri(strUrl);
 				string str = uri.LocalPath;

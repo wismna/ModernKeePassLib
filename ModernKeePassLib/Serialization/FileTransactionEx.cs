@@ -524,7 +524,7 @@ namespace ModernKeePassLib.Serialization
 			return false;
 		}
 #if !ModernKeePassLib
-        internal static void ClearOld()
+		internal static void ClearOld()
 		{
 			try
 			{

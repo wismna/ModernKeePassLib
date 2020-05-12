@@ -180,6 +180,8 @@ namespace ModernKeePassLib.Utility
 		internal static DialogResult SafeShowMessageBox(string strText, string strTitle,
 			MessageBoxButtons mb, MessageBoxIcon mi, MessageBoxDefaultButton mdb)
 		{
+			// strText += MessageService.NewParagraph + (new StackTrace(true)).ToString();
+
 #if KeePassLibSD
 			return MessageBox.Show(strText, strTitle, mb, mi, mdb);
 #else
